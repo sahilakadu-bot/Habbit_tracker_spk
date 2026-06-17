@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sahil's Habit Tracker</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+:root{
+  --bg:#0d0f14;--surface:#141720;--surface2:#1c2030;--border:#252a3a;
+  --accent:#6c63ff;--accent2:#ff6584;--gold:#f7c948;--done:#43e97b;
+  --text:#e8eaf6;--muted:#6b7280;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100;gap:8px;flex-wrap:wrap}
+.logo{font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:var(--accent);white-space:nowrap}.logo span{color:var(--text)}
+.nav-tabs{display:flex;gap:2px;flex-wrap:wrap}
+.nav-tab{padding:5px 11px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all .2s;white-space:nowrap}
+.nav-tab.active{background:var(--accent);color:#fff}
+.nav-tab:hover:not(.active){background:var(--border);color:var(--text)}
+.sync-badge{font-size:11px;font-family:'Space Mono',monospace;white-space:nowrap;padding:4px 10px;border-radius:99px;background:var(--surface2);border:1px solid var(--border)}
+.sync-badge.syncing{color:var(--gold);border-color:var(--gold)}
+.sync-badge.synced{color:var(--done);border-color:var(--done)}
+.sync-badge.error{color:var(--accent2);border-color:var(--accent2)}
+main{max-width:1100px;margin:0 auto;padding:24px 16px}
+.view{display:none}.view.active{display:block}
+
+/* SETUP SCREEN */
+.setup-wrap{max-width:520px;margin:60px auto;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:36px 32px}
+.setup-wrap h1{font-size:22px;font-weight:700;margin-bottom:8px}
+.setup-wrap p{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:24px}
+.setup-step{display:flex;gap:12px;margin-bottom:16px;align-items:flex-start}
+.step-num{background:var(--accent);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px}
+.step-text{font-size:13px;line-height:1.6;color:var(--text)}
+.step-text a{color:var(--accent);text-decoration:none}
+.step-text a:hover{text-decoration:underline}
+.setup-input-row{display:flex;flex-direction:column;gap:10px;margin-top:24px}
+.setup-label{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px}
+.setup-input{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px 14px;font-family:'Space Grotesk',sans-serif;font-size:14px;outline:none;width:100%}
+.setup-input:focus{border-color:var(--accent)}
+.setup-btn{background:var(--accent);border:none;color:#fff;border-radius:9px;padding:12px 24px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;cursor:pointer;width:100%;margin-top:8px;transition:opacity .2s}
+.setup-btn:hover{opacity:.85}
+.setup-note{font-size:11px;color:var(--muted);margin-top:12px;line-height:1.5;text-align:center}
+
+/* TODAY */
+.today-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;gap:16px}
+.today-title h1{font-size:24px;font-weight:700}
+.today-title p{color:var(--muted);font-size:13px;margin-top:5px}
+.ring-wrap{position:relative;width:76px;height:76px;flex-shrink:0}
+.ring-wrap svg{transform:rotate(-90deg)}
+.ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:15px;font-weight:700}
+.ring-label small{font-size:9px;color:var(--muted)}
+.habits-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:560px){.habits-grid{grid-template-columns:1fr}}
+.habit-card{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
+.habit-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--done);opacity:0;transition:.2s}
+.habit-card.done{border-color:var(--done);background:rgba(67,233,123,.06)}
+.habit-card.done::before{opacity:1}
+.habit-card:hover{border-color:var(--accent);transform:translateY(-1px)}
+.habit-check{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;transition:.2s}
+.habit-card.done .habit-check{background:var(--done);border-color:var(--done);color:#0d0f14}
+.habit-info{flex:1;min-width:0}
+.habit-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.habit-streak{font-size:11px;color:var(--gold);margin-top:2px}
+.habit-emoji{font-size:20px;flex-shrink:0}
+.sh{display:flex;align-items:center;gap:10px;margin:28px 0 14px}
+.sh h2{font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.sh .ln{flex:1;height:1px;background:var(--border)}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+@media(max-width:600px){.stats-row{grid-template-columns:1fr 1fr}}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:18px 16px}
+.stat-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.stat-value{font-family:'Space Mono',monospace;font-size:26px;font-weight:700}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* PROGRESS BARS */
+.hprog-row{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:13px 16px;margin-bottom:8px}
+.hprog-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.hprog-name{font-size:13px;font-weight:500}
+.hprog-right{display:flex;align-items:center;gap:10px}
+.hprog-count{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace}
+.hprog-pct{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;min-width:36px;text-align:right}
+.bar-track{height:5px;background:var(--border);border-radius:99px;overflow:hidden}
+.bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--done));transition:width .8s cubic-bezier(.4,0,.2,1)}
+
+/* CALENDAR */
+.cal-nav{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.cal-nav h2{font-size:18px;font-weight:700;flex:1;text-align:center}
+.cal-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+.cal-btn:hover{background:var(--border)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:16px}
+.cal-day-label{text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding-bottom:4px;letter-spacing:1px}
+.cal-day{aspect-ratio:1;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .15s}
+.cal-day.empty{cursor:default}
+.cal-day.has-data{border-color:var(--border);background:var(--surface)}
+.cal-day.today{border-color:var(--accent)!important}
+.cal-day:not(.empty):hover{border-color:var(--accent);transform:scale(1.06)}
+.cal-day.selected{background:var(--accent);color:#fff;border-color:var(--accent)}
+.cal-dot{width:5px;height:5px;border-radius:50%;margin-top:2px}
+.dot-good{background:var(--done)}.dot-mid{background:var(--gold)}.dot-low{background:var(--accent2)}
+.detail-panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-top:14px}
+.detail-panel h3{font-size:15px;font-weight:700;margin-bottom:14px}
+
+/* YEARLY */
+.year-nav{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.year-nav h2{font-size:18px;font-weight:700;flex:1;text-align:center}
+.heatmap-wrap{overflow-x:auto;padding-bottom:8px}
+.heatmap{display:flex;gap:4px}
+.hm-col{display:flex;flex-direction:column;gap:3px}
+.hm-label{font-size:9px;color:var(--muted);text-align:center;height:11px;font-family:'Space Mono',monospace}
+.hm-cell{width:13px;height:13px;border-radius:3px;cursor:default}
+.hm-0{background:var(--border)}.hm-1{background:#1e3a2f}.hm-2{background:#265c3f}
+.hm-3{background:#2e8050}.hm-4{background:#38a864}.hm-5{background:var(--done)}
+.hm-legend{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:11px;color:var(--muted)}
+.hm-legend-cells{display:flex;gap:3px}
+.hm-legend-cell{width:13px;height:13px;border-radius:3px}
+.year-months{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:4px}
+@media(max-width:600px){.year-months{grid-template-columns:1fr 1fr}}
+.ym-card{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:14px;cursor:pointer;transition:all .2s}
+.ym-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.ym-name{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.ym-pct{font-family:'Space Mono',monospace;font-size:22px;font-weight:700}
+.ym-bar{height:4px;background:var(--border);border-radius:99px;overflow:hidden;margin:6px 0 4px}
+.ym-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--done))}
+.ym-checks{font-size:10px;color:var(--muted)}
+
+/* MANAGE */
+.manage-row{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:11px 15px;display:flex;align-items:center;gap:11px;margin-bottom:8px}
+.manage-emoji{font-size:18px}
+.manage-name{flex:1;font-size:13px;font-weight:500}
+.del-btn{background:transparent;border:1px solid var(--border);color:var(--accent2);border-radius:7px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:'Space Grotesk',sans-serif}
+.del-btn:hover{background:rgba(255,101,132,.1)}
+.add-form{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:18px;display:flex;gap:10px;flex-wrap:wrap}
+.add-form input,.add-form select{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:9px 13px;font-family:'Space Grotesk',sans-serif;font-size:13px;outline:none}
+.add-form input{flex:1;min-width:160px}
+.add-form input:focus,.add-form select:focus{border-color:var(--accent)}
+.add-btn{background:var(--accent);border:none;color:#fff;border-radius:7px;padding:9px 20px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+.add-btn:hover{opacity:.85}
+.data-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.action-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 16px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.action-btn:hover{border-color:var(--accent);color:var(--accent)}
+.action-btn.danger{color:var(--accent2)}
+.action-btn.danger:hover{border-color:var(--accent2)}
+.info-box{background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:16px 18px;font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:20px}
+.info-box strong{color:var(--text)}
+.info-box a{color:var(--accent);text-decoration:none}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--done);color:#0d0f14;font-weight:700;font-size:13px;padding:10px 22px;border-radius:99px;transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:999;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:16px;color:var(--muted)}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">sahil<span>.habits</span></div>
+  <div class="nav-tabs" id="navTabs" style="display:none">
+    <button class="nav-tab active" data-view="today" onclick="switchView('today',this)">Today</button>
+    <button class="nav-tab" data-view="monthly" onclick="switchView('monthly',this)">Monthly</button>
+    <button class="nav-tab" data-view="yearly" onclick="switchView('yearly',this)">Yearly</button>
+    <button class="nav-tab" data-view="calendar" onclick="switchView('calendar',this)">Calendar</button>
+    <button class="nav-tab" data-view="manage" onclick="switchView('manage',this)">Manage</button>
+  </div>
+  <div class="sync-badge synced" id="syncBadge" style="display:none">✓ synced</div>
+</header>
+
+<main id="mainContent">
+
+  <!-- SETUP SCREEN -->
+  <div id="setupScreen">
+    <div class="setup-wrap">
+      <h1>☁️ Connect Cloud Storage</h1>
+      <p>Your data will be saved to a <strong>GitHub Gist</strong> — a free private file in your GitHub account. Works on every device, never gets deleted.</p>
+
+      <div class="setup-step">
+        <div class="step-num">1</div>
+        <div class="step-text">Go to <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a> and create a token.<br>
+        Check only <strong>gist</strong> scope. Set expiration to "No expiration".</div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">2</div>
+        <div class="step-text">Paste the token below. It starts with <code style="color:var(--gold);font-family:'Space Mono',monospace">ghp_</code></div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">3</div>
+        <div class="step-text">Click Connect — a private Gist is created automatically to store your data.</div>
+      </div>
+
+      <div class="setup-input-row">
+        <div>
+          <div class="setup-label">GitHub Personal Access Token</div>
+          <input class="setup-input" type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off"/>
+        </div>
+        <div id="gistIdRow" style="display:none">
+          <div class="setup-label">Gist ID (if you already have one)</div>
+          <input class="setup-input" type="text" id="gistIdInput" placeholder="Leave blank to create new"/>
+        </div>
+        <button class="setup-btn" onclick="connect()">Connect to GitHub Gist →</button>
+        <div id="setupError" style="color:var(--accent2);font-size:13px;text-align:center;display:none"></div>
+      </div>
+      <div class="setup-note">🔒 Your token is stored only in your browser's localStorage — never sent anywhere except GitHub's API.</div>
+      <div style="text-align:center;margin-top:16px">
+        <span style="font-size:12px;color:var(--muted);cursor:pointer;text-decoration:underline" onclick="toggleGistInput()">Already have a Gist ID? Click here</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div id="loadingScreen" style="display:none">
+    <div class="loading"><div class="spinner"></div><span>Syncing your data from GitHub…</span></div>
+  </div>
+
+  <!-- APP VIEWS -->
+  <div id="appViews" style="display:none">
+
+    <!-- TODAY -->
+    <div class="view active" id="view-today">
+      <div class="today-header">
+        <div class="today-title">
+          <h1 id="greeting">Good morning, Sahil 👋</h1>
+          <p id="todaySub">Let's make today count.</p>
+        </div>
+        <div class="ring-wrap">
+          <svg width="76" height="76" viewBox="0 0 76 76">
+            <circle cx="38" cy="38" r="32" fill="none" stroke="#252a3a" stroke-width="7"/>
+            <circle cx="38" cy="38" r="32" fill="none" stroke="url(#rg)" stroke-width="7" stroke-linecap="round"
+              stroke-dasharray="201" id="ringArc" stroke-dashoffset="201"/>
+            <defs><linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#6c63ff"/><stop offset="100%" stop-color="#43e97b"/>
+            </linearGradient></defs>
+          </svg>
+          <div class="ring-label"><span id="ringPct">0%</span><small>done</small></div>
+        </div>
+      </div>
+      <div class="sh"><div class="ln"></div><h2>Daily Habits</h2><div class="ln"></div></div>
+      <div class="habits-grid" id="habitsGrid"></div>
+    </div>
+
+    <!-- MONTHLY -->
+    <div class="view" id="view-monthly">
+      <div class="cal-nav">
+        <button class="cal-btn" onclick="monthlyNav(-1)">‹</button>
+        <h2 id="monthlyLabel"></h2>
+        <button class="cal-btn" onclick="monthlyNav(1)">›</button>
+      </div>
+      <div class="stats-row" id="monthlyStats"></div>
+      <div class="sh"><div class="ln"></div><h2>Habit Completion</h2><div class="ln"></div></div>
+      <div id="monthlyHabitList"></div>
+      <div class="sh"><div class="ln"></div><h2>Day-by-Day</h2><div class="ln"></div></div>
+      <div class="cal-grid" id="monthlyCalGrid"></div>
+      <div id="monthlyDayDetail"></div>
+    </div>
+
+    <!-- YEARLY -->
+    <div class="view" id="view-yearly">
+      <div class="year-nav">
+        <button class="cal-btn" onclick="yearlyNav(-1)">‹</button>
+        <h2 id="yearlyLabel"></h2>
+        <button class="cal-btn" onclick="yearlyNav(1)">›</button>
+      </div>
+      <div class="stats-row" id="yearlyStats"></div>
+      <div class="sh"><div class="ln"></div><h2>Activity Heatmap</h2><div class="ln"></div></div>
+      <div class="heatmap-wrap"><div class="heatmap" id="heatmap"></div></div>
+      <div class="hm-legend">Less <div class="hm-legend-cells">
+        <div class="hm-legend-cell hm-0"></div><div class="hm-legend-cell hm-1"></div>
+        <div class="hm-legend-cell hm-2"></div><div class="hm-legend-cell hm-3"></div>
+        <div class="hm-legend-cell hm-4"></div><div class="hm-legend-cell hm-5"></div>
+      </div> More</div>
+      <div class="sh"><div class="ln"></div><h2>Month-by-Month</h2><div class="ln"></div></div>
+      <div class="year-months" id="yearMonths"></div>
+      <div class="sh"><div class="ln"></div><h2>Best Habits This Year</h2><div class="ln"></div></div>
+      <div id="yearlyHabitList"></div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div class="view" id="view-calendar">
+      <div class="cal-nav">
+        <button class="cal-btn" onclick="calNav(-1)">‹</button>
+        <h2 id="calLabel"></h2>
+        <button class="cal-btn" onclick="calNav(1)">›</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div id="calDayDetail"></div>
+    </div>
+
+    <!-- MANAGE -->
+    <div class="view" id="view-manage">
+      <div class="sh" style="margin-top:0"><div class="ln"></div><h2>Cloud Storage Info</h2><div class="ln"></div></div>
+      <div class="info-box">
+        <strong>✅ Data saved to GitHub Gist</strong> — your habits sync across all devices automatically.<br>
+        Gist ID: <strong id="gistIdDisplay" style="color:var(--accent);font-family:'Space Mono',monospace">—</strong><br>
+        View it at: <a id="gistLink" href="#" target="_blank" style="font-family:'Space Mono',monospace">github.com/gist/…</a>
+      </div>
+      <div class="data-actions">
+        <button class="action-btn" onclick="forcSync()">🔄 Force Sync</button>
+        <button class="action-btn" onclick="exportJSON()">⬇ Export JSON backup</button>
+        <button class="action-btn danger" onclick="disconnectGist()">⚡ Disconnect Gist</button>
+      </div>
+      <div class="sh"><div class="ln"></div><h2>Your Habits</h2><div class="ln"></div></div>
+      <div id="manageList"></div>
+      <div class="sh"><div class="ln"></div><h2>Add New Habit</h2><div class="ln"></div></div>
+      <div class="add-form">
+        <select id="newEmoji">
+          <option>📖</option><option>🕌</option><option>📚</option><option>🧹</option>
+          <option>📈</option><option>🧘</option><option>🏋️</option><option>😴</option>
+          <option>😤</option><option>💼</option><option>💊</option><option>💇</option>
+          <option>🚶</option><option>💧</option><option>✍️</option><option>🎯</option>
+          <option>🌱</option><option>🔥</option><option>🎵</option><option>🍎</option>
+        </select>
+        <input type="text" id="newHabitName" placeholder="New habit name..." maxlength="50" onkeydown="if(event.key==='Enter')addHabit()"/>
+        <button class="add-btn" onclick="addHabit()">Add Habit</button>
+      </div>
+    </div>
+
+  </div><!-- /appViews -->
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+//  CONSTANTS & STATE
+// ═══════════════════════════════════════════
+const LS_TOKEN   = 'sht_ghtoken';
+const LS_GIST_ID = 'sht_gistid';
+const GIST_FILE  = 'sahil_habits.json';
+const NOW        = new Date();
+
+const DEFAULT_HABITS = [
+  {id:1,name:'Reading',emoji:'📖'},
+  {id:2,name:'Go to mandir',emoji:'🕌'},
+  {id:3,name:'English study / self-improvement',emoji:'📚'},
+  {id:4,name:'Keep it clean',emoji:'🧹'},
+  {id:5,name:'Trading study',emoji:'📈'},
+  {id:6,name:'Short meditation',emoji:'🧘'},
+  {id:7,name:'Gym',emoji:'🏋️'},
+  {id:8,name:'Sleep on time',emoji:'😴'},
+  {id:9,name:'Control anger',emoji:'😤'},
+  {id:10,name:'Interview study',emoji:'💼'},
+  {id:11,name:'Morning hair serum',emoji:'💇'},
+  {id:12,name:'Night hair serum',emoji:'💇'},
+  {id:13,name:'Afternoon medicine',emoji:'💊'},
+];
+
+const MONTHS       = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+let ghToken = '';
+let gistId  = '';
+let db = { habits: DEFAULT_HABITS, log: {} };
+let saveTimer = null;
+
+// ═══════════════════════════════════════════
+//  GITHUB GIST API
+// ═══════════════════════════════════════════
+async function gistFetch(method, path, body) {
+  const res = await fetch(`https://api.github.com${path}`, {
+    method,
+    headers: {
+      'Authorization': `Bearer ${ghToken}`,
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json',
+      'X-GitHub-Api-Version': '2022-11-28'
+    },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  if (!res.ok) throw new Error(`GitHub API ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+async function createGist() {
+  const data = await gistFetch('POST', '/gists', {
+    description: 'Sahil Habit Tracker Data',
+    public: false,
+    files: { [GIST_FILE]: { content: JSON.stringify({ habits: DEFAULT_HABITS, log: {} }, null, 2) } }
+  });
+  return data.id;
+}
+
+async function loadGist() {
+  const data = await gistFetch('GET', `/gists/${gistId}`);
+  const content = data.files[GIST_FILE]?.content;
+  if (!content) throw new Error('Gist file not found');
+  return JSON.parse(content);
+}
+
+async function saveGist() {
+  setSyncBadge('syncing', '↑ saving…');
+  await gistFetch('PATCH', `/gists/${gistId}`, {
+    files: { [GIST_FILE]: { content: JSON.stringify(db, null, 2) } }
+  });
+  setSyncBadge('synced', '✓ synced');
+}
+
+// debounced save — waits 1.5s after last change
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  setSyncBadge('syncing', '↑ pending…');
+  saveTimer = setTimeout(async () => {
+    try { await saveGist(); }
+    catch(e) { setSyncBadge('error', '⚠ save failed'); showToast('⚠ Could not save to GitHub!'); }
+  }, 1500);
+}
+
+// ═══════════════════════════════════════════
+//  SETUP / CONNECT
+// ═══════════════════════════════════════════
+function toggleGistInput() {
+  const row = document.getElementById('gistIdRow');
+  row.style.display = row.style.display === 'none' ? 'block' : 'none';
+}
+
+async function connect() {
+  const token = document.getElementById('tokenInput').value.trim();
+  const existingGist = document.getElementById('gistIdInput').value.trim();
+  const errEl = document.getElementById('setupError');
+  errEl.style.display = 'none';
+
+  if (!token) { errEl.textContent = 'Please enter your GitHub token.'; errEl.style.display='block'; return; }
+
+  ghToken = token;
+  show('loadingScreen');
+  hide('setupScreen');
+
+  try {
+    if (existingGist) {
+      gistId = existingGist;
+      db = await loadGist();
+    } else {
+      gistId = await createGist();
+      db = { habits: DEFAULT_HABITS, log: {} };
+    }
+    localStorage.setItem(LS_TOKEN, ghToken);
+    localStorage.setItem(LS_GIST_ID, gistId);
+    launchApp();
+  } catch(e) {
+    hide('loadingScreen');
+    show('setupScreen');
+    errEl.textContent = 'Connection failed: ' + e.message + '. Check your token has "gist" scope.';
+    errEl.style.display = 'block';
+    ghToken = ''; gistId = '';
+  }
+}
+
+async function init() {
+  const savedToken  = localStorage.getItem(LS_TOKEN);
+  const savedGistId = localStorage.getItem(LS_GIST_ID);
+
+  if (savedToken && savedGistId) {
+    ghToken = savedToken;
+    gistId  = savedGistId;
+    show('loadingScreen');
+    hide('setupScreen');
+    try {
+      db = await loadGist();
+      launchApp();
+    } catch(e) {
+      hide('loadingScreen');
+      show('setupScreen');
+      showToast('⚠ Could not load from GitHub. Re-connect below.');
+      localStorage.removeItem(LS_TOKEN);
+      localStorage.removeItem(LS_GIST_ID);
+    }
+  } else {
+    show('setupScreen');
+  }
+}
+
+function launchApp() {
+  hide('setupScreen'); hide('loadingScreen');
+  show('appViews');
+  document.getElementById('navTabs').style.display = 'flex';
+  document.getElementById('syncBadge').style.display = 'block';
+  setSyncBadge('synced', '✓ synced');
+  document.getElementById('gistIdDisplay').textContent = gistId;
+  document.getElementById('gistLink').href = `https://gist.github.com/${gistId}`;
+  document.getElementById('gistLink').textContent = `gist.github.com/${gistId.slice(0,10)}…`;
+  renderToday();
+}
+
+function disconnectGist() {
+  if (!confirm('Disconnect? Your data stays in the Gist — you can reconnect later.')) return;
+  localStorage.removeItem(LS_TOKEN);
+  localStorage.removeItem(LS_GIST_ID);
+  location.reload();
+}
+
+async function forcSync() {
+  try {
+    setSyncBadge('syncing', '↑ syncing…');
+    db = await loadGist();
+    await saveGist();
+    renderToday();
+    showToast('✓ Synced with GitHub!');
+  } catch(e) { showToast('⚠ Sync failed: ' + e.message); }
+}
+
+// ═══════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════
+function show(id){ document.getElementById(id).style.display='block'; }
+function hide(id){ document.getElementById(id).style.display='none'; }
+
+function setSyncBadge(cls, text) {
+  const el = document.getElementById('syncBadge');
+  el.className = 'sync-badge ' + cls;
+  el.textContent = text;
+}
+
+function fmtDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function todayKey() { return fmtDate(NOW); }
+function daysInMonth(y,m) { return new Date(y,m+1,0).getDate(); }
+function pctColor(p) { return p>=80?'var(--done)':p>=50?'var(--gold)':'var(--accent2)'; }
+
+function habits() { return db.habits; }
+function log()    { return db.log; }
+
+function getStreak(hid) {
+  let s=0; const d=new Date(NOW); d.setDate(d.getDate()-1);
+  for(let i=0;i<365;i++){
+    const k=fmtDate(d);
+    if(log()[k]&&log()[k][hid]){s++;d.setDate(d.getDate()-1);}else break;
+  }
+  return s;
+}
+
+function getMonthStats(year, month) {
+  const days=daysInMonth(year,month), habs=habits();
+  let totalDone=0,totalPossible=0,bestDay=0,bestDayNum=0,curStreak=0,maxStreak=0;
+  const habitCounts={}, dayData={};
+  habs.forEach(h=>habitCounts[h.id]=0);
+  for(let d=1;d<=days;d++){
+    const k=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dl=log()[k]||{};
+    const done=habs.filter(h=>dl[h.id]).length;
+    dayData[d]={done,total:habs.length,pct:habs.length?done/habs.length:0};
+    totalDone+=done; totalPossible+=habs.length;
+    if(done>bestDay){bestDay=done;bestDayNum=d;}
+    if(done>0){curStreak++;if(curStreak>maxStreak)maxStreak=curStreak;}else curStreak=0;
+    habs.forEach(h=>{if(dl[h.id])habitCounts[h.id]++;});
+  }
+  return{days,totalDone,totalPossible,bestDay,bestDayNum,habitCounts,dayData,maxStreak,
+    pct:totalPossible?Math.round(totalDone/totalPossible*100):0};
+}
+
+function getYearStats(year) {
+  const habitCounts={};
+  habits().forEach(h=>habitCounts[h.id]=0);
+  let totalDone=0,totalPossible=0;
+  const monthData=[];
+  for(let m=0;m<12;m++){
+    const s=getMonthStats(year,m);
+    monthData.push({month:m,...s});
+    totalDone+=s.totalDone; totalPossible+=s.totalPossible;
+    habits().forEach(h=>{habitCounts[h.id]=(habitCounts[h.id]||0)+(s.habitCounts[h.id]||0);});
+  }
+  const activeDays=Object.keys(log()).filter(k=>k.startsWith(year+'-')&&Object.values(log()[k]).some(Boolean)).length;
+  return{totalDone,totalPossible,monthData,habitCounts,activeDays,
+    pct:totalPossible?Math.round(totalDone/totalPossible*100):0};
+}
+
+// ═══════════════════════════════════════════
+//  NAV
+// ═══════════════════════════════════════════
+function switchView(name, btn) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  btn.classList.add('active');
+  ({monthly:renderMonthly,yearly:renderYearly,calendar:renderCalendar,manage:renderManage})[name]?.();
+}
+
+// ═══════════════════════════════════════════
+//  TODAY
+// ═══════════════════════════════════════════
+function renderToday() {
+  const h=NOW.getHours();
+  document.getElementById('greeting').textContent=`${h<12?'Good morning':h<17?'Good afternoon':'Good evening'}, Sahil 👋`;
+  const dayLog=log()[todayKey()]||{}, habs=habits();
+  const done=habs.filter(h=>dayLog[h.id]).length;
+  const pct=habs.length?Math.round(done/habs.length*100):0;
+  document.getElementById('ringPct').textContent=pct+'%';
+  document.getElementById('ringArc').setAttribute('stroke-dashoffset',201-201*pct/100);
+  document.getElementById('todaySub').textContent=pct===100?`🎉 Perfect day! All ${habs.length} habits done!`:`${done} of ${habs.length} habits done today`;
+  const grid=document.getElementById('habitsGrid');
+  grid.innerHTML='';
+  habs.forEach(h=>{
+    const isDone=!!dayLog[h.id], streak=getStreak(h.id);
+    const card=document.createElement('div');
+    card.className='habit-card'+(isDone?' done':'');
+    card.innerHTML=`<div class="habit-check">${isDone?'✓':''}</div>
+      <div class="habit-info"><div class="habit-name">${h.name}</div>
+      <div class="habit-streak">${streak>0?`🔥 ${streak} day streak`:'Start your streak!'}</div></div>
+      <div class="habit-emoji">${h.emoji}</div>`;
+    card.onclick=()=>toggleHabit(h.id);
+    grid.appendChild(card);
+  });
+}
+
+function toggleHabit(id) {
+  const k=todayKey();
+  if(!db.log[k])db.log[k]={};
+  db.log[k][id]=!db.log[k][id];
+  renderToday();
+  scheduleSave();
+  const h=habits().find(x=>x.id===id);
+  if(db.log[k][id])showToast(`${h.emoji} ${h.name} — done!`);
+}
+
+// ═══════════════════════════════════════════
+//  MONTHLY
+// ═══════════════════════════════════════════
+let mvYear=NOW.getFullYear(), mvMonth=NOW.getMonth();
+function monthlyNav(d){mvMonth+=d;if(mvMonth>11){mvMonth=0;mvYear++;}if(mvMonth<0){mvMonth=11;mvYear--;}renderMonthly();}
+function renderMonthly(){
+  document.getElementById('monthlyLabel').textContent=`${MONTHS[mvMonth]} ${mvYear}`;
+  const s=getMonthStats(mvYear,mvMonth);
+  document.getElementById('monthlyStats').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Completion</div><div class="stat-value" style="color:${pctColor(s.pct)}">${s.pct}%</div><div class="stat-sub">${s.totalDone} of ${s.totalPossible}</div></div>
+    <div class="stat-card"><div class="stat-label">Best Day</div><div class="stat-value" style="color:var(--done)">${s.bestDay}</div><div class="stat-sub">${s.bestDay>0?MONTHS_SHORT[mvMonth]+' '+s.bestDayNum:'No data'}</div></div>
+    <div class="stat-card"><div class="stat-label">Best Streak</div><div class="stat-value" style="color:var(--gold)">${s.maxStreak}</div><div class="stat-sub">days in a row</div></div>
+    <div class="stat-card"><div class="stat-label">Active Days</div><div class="stat-value" style="color:var(--accent)">${Object.values(s.dayData).filter(d=>d.done>0).length}</div><div class="stat-sub">of ${s.days} days</div></div>`;
+  const list=document.getElementById('monthlyHabitList');list.innerHTML='';
+  [...habits()].sort((a,b)=>(s.habitCounts[b.id]||0)-(s.habitCounts[a.id]||0)).forEach(h=>{
+    const c=s.habitCounts[h.id]||0,p=Math.round(c/s.days*100);
+    const div=document.createElement('div');div.className='hprog-row';
+    div.innerHTML=`<div class="hprog-top"><span class="hprog-name">${h.emoji} ${h.name}</span><div class="hprog-right"><span class="hprog-count">${c}/${s.days}</span><span class="hprog-pct" style="color:${pctColor(p)}">${p}%</span></div></div><div class="bar-track"><div class="bar-fill" style="width:${p}%"></div></div>`;
+    list.appendChild(div);
+  });
+  const grid=document.getElementById('monthlyCalGrid');grid.innerHTML='';
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(l=>{const e=document.createElement('div');e.className='cal-day-label';e.textContent=l;grid.appendChild(e);});
+  const fd=new Date(mvYear,mvMonth,1).getDay();
+  for(let i=0;i<fd;i++){const e=document.createElement('div');e.className='cal-day empty';grid.appendChild(e);}
+  for(let d=1;d<=s.days;d++){
+    const k=`${mvYear}-${String(mvMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dd=s.dayData[d];
+    const el=document.createElement('div');
+    el.className='cal-day has-data'+(k===todayKey()?' today':'');
+    const dc=dd.done>0?(dd.pct>=.7?'dot-good':dd.pct>=.4?'dot-mid':'dot-low'):'';
+    el.innerHTML=`<span>${d}</span>${dd.done>0?`<div class="cal-dot ${dc}"></div>`:''}`;
+    el.onclick=()=>{
+      document.querySelectorAll('#monthlyCalGrid .cal-day').forEach(e=>e.classList.remove('selected'));
+      el.classList.add('selected');
+      const dl=log()[k]||{};
+      document.getElementById('monthlyDayDetail').innerHTML=`<div class="detail-panel"><h3>${MONTHS[mvMonth]} ${d}, ${mvYear} — ${dd.done}/${dd.total} done (${Math.round(dd.pct*100)}%)</h3><div class="habits-grid">${habits().map(h=>`<div class="habit-card${dl[h.id]?' done':''}"><div class="habit-check">${dl[h.id]?'✓':''}</div><div class="habit-info"><div class="habit-name">${h.name}</div></div><div class="habit-emoji">${h.emoji}</div></div>`).join('')}</div></div>`;
+    };
+    grid.appendChild(el);
+  }
+  document.getElementById('monthlyDayDetail').innerHTML='';
+}
+
+// ═══════════════════════════════════════════
+//  YEARLY
+// ═══════════════════════════════════════════
+let vyYear=NOW.getFullYear();
+function yearlyNav(d){vyYear+=d;renderYearly();}
+function renderYearly(){
+  document.getElementById('yearlyLabel').textContent=`Year ${vyYear}`;
+  const s=getYearStats(vyYear);
+  document.getElementById('yearlyStats').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Year Completion</div><div class="stat-value" style="color:${pctColor(s.pct)}">${s.pct}%</div><div class="stat-sub">${s.totalDone} total checks</div></div>
+    <div class="stat-card"><div class="stat-label">Active Days</div><div class="stat-value" style="color:var(--accent)">${s.activeDays}</div><div class="stat-sub">days with activity</div></div>
+    <div class="stat-card"><div class="stat-label">Habits</div><div class="stat-value" style="color:var(--gold)">${habits().length}</div><div class="stat-sub">being tracked</div></div>
+    <div class="stat-card"><div class="stat-label">Total Possible</div><div class="stat-value" style="color:var(--muted)">${s.totalPossible}</div><div class="stat-sub">habit-days in ${vyYear}</div></div>`;
+  // heatmap
+  const hm=document.getElementById('heatmap');hm.innerHTML='';
+  const start=new Date(vyYear,0,1),pad=start.getDay();
+  const total=Math.ceil((pad+new Date(vyYear,11,31).getDate()+new Date(vyYear,11,30).getTime()/86400000- new Date(vyYear,0,0).getTime()/86400000)/7)*7;
+  // simpler: just iterate 53 weeks
+  for(let c=0;c<53;c++){
+    const col=document.createElement('div');col.className='hm-col';
+    const lbl=document.createElement('div');lbl.className='hm-label';
+    let labelSet=false;
+    for(let r=0;r<7;r++){
+      const idx=c*7+r-pad;
+      const dd=new Date(vyYear,0,1+idx);
+      if(!labelSet&&dd.getFullYear()===vyYear&&dd.getDate()<=7){lbl.textContent=MONTHS_SHORT[dd.getMonth()];labelSet=true;}
+      const cell=document.createElement('div');
+      if(idx<0||dd.getFullYear()!==vyYear){cell.className='hm-cell hm-0';}
+      else{
+        const k=fmtDate(dd),dl=log()[k]||{};
+        const done=habits().filter(h=>dl[h.id]).length,tot=habits().length;
+        const lvl=tot===0?0:Math.min(5,Math.ceil(done/tot*5));
+        cell.className=`hm-cell hm-${lvl}`;cell.title=`${k}: ${done}/${tot}`;
+      }
+      col.appendChild(cell);
+    }
+    hm.appendChild(lbl);hm.appendChild(col);
+  }
+  // month cards
+  const ym=document.getElementById('yearMonths');ym.innerHTML='';
+  s.monthData.forEach(m=>{
+    const p=m.totalPossible?Math.round(m.totalDone/m.totalPossible*100):0;
+    const c=document.createElement('div');c.className='ym-card';
+    c.innerHTML=`<div class="ym-name">${MONTHS_SHORT[m.month]}</div><div class="ym-pct" style="color:${pctColor(p)}">${p}%</div><div class="ym-bar"><div class="ym-fill" style="width:${p}%"></div></div><div class="ym-checks">${m.totalDone} checks · ${m.days} days</div>`;
+    c.onclick=()=>{mvYear=vyYear;mvMonth=m.month;switchView('monthly',document.querySelector('[data-view=monthly]'));};
+    ym.appendChild(c);
+  });
+  // habit list
+  const yhl=document.getElementById('yearlyHabitList');yhl.innerHTML='';
+  const td=s.monthData.reduce((a,m)=>a+m.days,0);
+  [...habits()].sort((a,b)=>(s.habitCounts[b.id]||0)-(s.habitCounts[a.id]||0)).forEach(h=>{
+    const cnt=s.habitCounts[h.id]||0,p=td?Math.round(cnt/td*100):0;
+    const div=document.createElement('div');div.className='hprog-row';
+    div.innerHTML=`<div class="hprog-top"><span class="hprog-name">${h.emoji} ${h.name}</span><div class="hprog-right"><span class="hprog-count">${cnt}/${td}</span><span class="hprog-pct" style="color:${pctColor(p)}">${p}%</span></div></div><div class="bar-track"><div class="bar-fill" style="width:${p}%"></div></div>`;
+    yhl.appendChild(div);
+  });
+}
+
+// ═══════════════════════════════════════════
+//  CALENDAR
+// ═══════════════════════════════════════════
+let calYear=NOW.getFullYear(),calMonth=NOW.getMonth();
+function calNav(d){calMonth+=d;if(calMonth>11){calMonth=0;calYear++;}if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
+function renderCalendar(){
+  document.getElementById('calLabel').textContent=`${MONTHS[calMonth]} ${calYear}`;
+  const grid=document.getElementById('calGrid');grid.innerHTML='';
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(l=>{const e=document.createElement('div');e.className='cal-day-label';e.textContent=l;grid.appendChild(e);});
+  const fd=new Date(calYear,calMonth,1).getDay(),days=daysInMonth(calYear,calMonth),habs=habits();
+  for(let i=0;i<fd;i++){const e=document.createElement('div');e.className='cal-day empty';grid.appendChild(e);}
+  for(let d=1;d<=days;d++){
+    const k=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dl=log()[k]||{},done=habs.filter(h=>dl[h.id]).length,pct=habs.length?done/habs.length:0;
+    const el=document.createElement('div');
+    el.className='cal-day has-data'+(k===todayKey()?' today':'');
+    el.innerHTML=`<span>${d}</span>${done>0?`<div class="cal-dot ${pct>=.7?'dot-good':pct>=.4?'dot-mid':'dot-low'}"></div>`:''}`;
+    el.onclick=()=>{
+      document.querySelectorAll('#calGrid .cal-day').forEach(e=>e.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('calDayDetail').innerHTML=`<div class="detail-panel"><h3>${MONTHS[calMonth]} ${d}, ${calYear} — ${done}/${habs.length} done (${Math.round(pct*100)}%)</h3><div class="habits-grid">${habs.map(h=>`<div class="habit-card${dl[h.id]?' done':''}"><div class="habit-check">${dl[h.id]?'✓':''}</div><div class="habit-info"><div class="habit-name">${h.name}</div></div><div class="habit-emoji">${h.emoji}</div></div>`).join('')}</div></div>`;
+    };
+    grid.appendChild(el);
+  }
+  document.getElementById('calDayDetail').innerHTML='';
+}
+
+// ═══════════════════════════════════════════
+//  MANAGE
+// ═══════════════════════════════════════════
+function renderManage(){
+  document.getElementById('gistIdDisplay').textContent=gistId;
+  document.getElementById('gistLink').href=`https://gist.github.com/${gistId}`;
+  document.getElementById('gistLink').textContent=`gist.github.com/${gistId.slice(0,12)}…`;
+  const list=document.getElementById('manageList');list.innerHTML='';
+  if(!habits().length){list.innerHTML='<div style="color:var(--muted);padding:20px;text-align:center">No habits yet.</div>';return;}
+  habits().forEach(h=>{
+    const row=document.createElement('div');row.className='manage-row';
+    row.innerHTML=`<div class="manage-emoji">${h.emoji}</div><div class="manage-name">${h.name}</div><button class="del-btn" onclick="deleteHabit(${h.id})">Remove</button>`;
+    list.appendChild(row);
+  });
+}
+
+function addHabit(){
+  const name=document.getElementById('newHabitName').value.trim();
+  const emoji=document.getElementById('newEmoji').value;
+  if(!name){showToast('Enter a habit name!');return;}
+  db.habits.push({id:Date.now(),name,emoji});
+  document.getElementById('newHabitName').value='';
+  renderManage();renderToday();
+  scheduleSave();
+  showToast(`${emoji} "${name}" added!`);
+}
+
+function deleteHabit(id){
+  const h=habits().find(x=>x.id===id);
+  if(!confirm(`Remove "${h.name}"? Past logs stay.`))return;
+  db.habits=db.habits.filter(x=>x.id!==id);
+  renderManage();renderToday();
+  scheduleSave();
+  showToast('Habit removed.');
+}
+
+function exportJSON(){
+  const b=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download=`sahil_habits_backup_${fmtDate(NOW)}.json`;a.click();
+  showToast('✓ Backup exported!');
+}
+
+// ═══════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ═══════════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════════
+init();
+</script>
+</body>
+</html>
