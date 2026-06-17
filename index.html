@@ -6,17 +6,13 @@
 <title>Sahil's Habit Tracker</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
-:root{
-  --bg:#0d0f14;--surface:#141720;--surface2:#1c2030;--border:#252a3a;
-  --accent:#6c63ff;--accent2:#ff6584;--gold:#f7c948;--done:#43e97b;
-  --text:#e8eaf6;--muted:#6b7280;
-}
+:root{--bg:#0d0f14;--surface:#141720;--surface2:#1c2030;--border:#252a3a;--accent:#6c63ff;--accent2:#ff6584;--gold:#f7c948;--done:#43e97b;--text:#e8eaf6;--muted:#6b7280}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100;gap:8px;flex-wrap:wrap}
 .logo{font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:var(--accent);white-space:nowrap}.logo span{color:var(--text)}
 .nav-tabs{display:flex;gap:2px;flex-wrap:wrap}
-.nav-tab{padding:5px 11px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all .2s;white-space:nowrap}
+.nav-tab{padding:5px 11px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all .2s;white-space:nowrap;font-family:'Space Grotesk',sans-serif}
 .nav-tab.active{background:var(--accent);color:#fff}
 .nav-tab:hover:not(.active){background:var(--border);color:var(--text)}
 .sync-badge{font-size:11px;font-family:'Space Mono',monospace;white-space:nowrap;padding:4px 10px;border-radius:99px;background:var(--surface2);border:1px solid var(--border)}
@@ -26,22 +22,36 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 main{max-width:1100px;margin:0 auto;padding:24px 16px}
 .view{display:none}.view.active{display:block}
 
-/* SETUP SCREEN */
-.setup-wrap{max-width:520px;margin:60px auto;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:36px 32px}
-.setup-wrap h1{font-size:22px;font-weight:700;margin-bottom:8px}
-.setup-wrap p{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:24px}
-.setup-step{display:flex;gap:12px;margin-bottom:16px;align-items:flex-start}
-.step-num{background:var(--accent);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px}
-.step-text{font-size:13px;line-height:1.6;color:var(--text)}
-.step-text a{color:var(--accent);text-decoration:none}
-.step-text a:hover{text-decoration:underline}
-.setup-input-row{display:flex;flex-direction:column;gap:10px;margin-top:24px}
-.setup-label{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px}
-.setup-input{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px 14px;font-family:'Space Grotesk',sans-serif;font-size:14px;outline:none;width:100%}
+/* SETUP */
+.setup-outer{min-height:calc(100vh - 58px);display:flex;align-items:center;justify-content:center;padding:20px}
+.setup-wrap{max-width:540px;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:32px 28px}
+.setup-wrap h1{font-size:22px;font-weight:700;margin-bottom:6px}
+.setup-wrap>p{color:var(--muted);font-size:13px;line-height:1.6;margin-bottom:22px}
+.step-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.step-box h3{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.step-box p{font-size:13px;line-height:1.65;color:var(--text)}
+.step-box a{color:var(--gold);text-decoration:none;font-weight:600}
+.step-box a:hover{text-decoration:underline}
+.step-box code{font-family:'Space Mono',monospace;font-size:12px;color:var(--gold);background:rgba(247,201,72,.1);padding:1px 5px;border-radius:4px}
+.step-box .warn{color:var(--accent2);font-size:12px;margin-top:6px;display:block}
+.setup-divider{text-align:center;color:var(--muted);font-size:12px;margin:16px 0;letter-spacing:1px}
+.setup-label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.setup-input{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px 14px;font-family:'Space Mono',monospace;font-size:13px;outline:none;width:100%;transition:border .2s}
 .setup-input:focus{border-color:var(--accent)}
-.setup-btn{background:var(--accent);border:none;color:#fff;border-radius:9px;padding:12px 24px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;cursor:pointer;width:100%;margin-top:8px;transition:opacity .2s}
+.token-hint{font-size:12px;margin-top:5px;min-height:18px;transition:color .2s}
+.setup-btn{background:var(--accent);border:none;color:#fff;border-radius:9px;padding:13px 24px;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;cursor:pointer;width:100%;margin-top:14px;transition:opacity .2s}
 .setup-btn:hover{opacity:.85}
-.setup-note{font-size:11px;color:var(--muted);margin-top:12px;line-height:1.5;text-align:center}
+.setup-btn:disabled{opacity:.5;cursor:not-allowed}
+.err-box{background:rgba(255,101,132,.08);border:1px solid var(--accent2);border-radius:9px;padding:12px 14px;font-size:13px;color:var(--accent2);margin-top:12px;line-height:1.6;display:none}
+.setup-note{font-size:11px;color:var(--muted);text-align:center;margin-top:14px;line-height:1.6}
+.setup-tabs{display:flex;gap:0;margin-bottom:20px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.setup-tab{flex:1;padding:10px;text-align:center;cursor:pointer;font-size:13px;font-weight:600;background:var(--surface2);color:var(--muted);border:none;font-family:'Space Grotesk',sans-serif;transition:all .2s}
+.setup-tab.active{background:var(--accent);color:#fff}
+
+/* LOADING */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;color:var(--muted)}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 /* TODAY */
 .today-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;gap:16px}
@@ -75,8 +85,6 @@ main{max-width:1100px;margin:0 auto;padding:24px 16px}
 .stat-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
 .stat-value{font-family:'Space Mono',monospace;font-size:26px;font-weight:700}
 .stat-sub{font-size:11px;color:var(--muted);margin-top:3px}
-
-/* PROGRESS BARS */
 .hprog-row{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:13px 16px;margin-bottom:8px}
 .hprog-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
 .hprog-name{font-size:13px;font-weight:500}
@@ -86,7 +94,7 @@ main{max-width:1100px;margin:0 auto;padding:24px 16px}
 .bar-track{height:5px;background:var(--border);border-radius:99px;overflow:hidden}
 .bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--done));transition:width .8s cubic-bezier(.4,0,.2,1)}
 
-/* CALENDAR */
+/* CAL */
 .cal-nav{display:flex;align-items:center;gap:12px;margin-bottom:20px}
 .cal-nav h2{font-size:18px;font-weight:700;flex:1;text-align:center}
 .cal-btn{background:var(--surface);border:1px solid var(--border);color:var(--text);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
@@ -111,7 +119,7 @@ main{max-width:1100px;margin:0 auto;padding:24px 16px}
 .heatmap{display:flex;gap:4px}
 .hm-col{display:flex;flex-direction:column;gap:3px}
 .hm-label{font-size:9px;color:var(--muted);text-align:center;height:11px;font-family:'Space Mono',monospace}
-.hm-cell{width:13px;height:13px;border-radius:3px;cursor:default}
+.hm-cell{width:13px;height:13px;border-radius:3px}
 .hm-0{background:var(--border)}.hm-1{background:#1e3a2f}.hm-2{background:#265c3f}
 .hm-3{background:#2e8050}.hm-4{background:#38a864}.hm-5{background:var(--done)}
 .hm-legend{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:11px;color:var(--muted)}
@@ -129,8 +137,7 @@ main{max-width:1100px;margin:0 auto;padding:24px 16px}
 
 /* MANAGE */
 .manage-row{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:11px 15px;display:flex;align-items:center;gap:11px;margin-bottom:8px}
-.manage-emoji{font-size:18px}
-.manage-name{flex:1;font-size:13px;font-weight:500}
+.manage-emoji{font-size:18px}.manage-name{flex:1;font-size:13px;font-weight:500}
 .del-btn{background:transparent;border:1px solid var(--border);color:var(--accent2);border-radius:7px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:'Space Grotesk',sans-serif}
 .del-btn:hover{background:rgba(255,101,132,.1)}
 .add-form{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:18px;display:flex;gap:10px;flex-wrap:wrap}
@@ -144,16 +151,18 @@ main{max-width:1100px;margin:0 auto;padding:24px 16px}
 .action-btn:hover{border-color:var(--accent);color:var(--accent)}
 .action-btn.danger{color:var(--accent2)}
 .action-btn.danger:hover{border-color:var(--accent2)}
-.info-box{background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:16px 18px;font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:20px}
+
+/* SYNC INFO BOX */
+.info-box{background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:16px 18px;font-size:13px;line-height:1.7;margin-bottom:20px}
 .info-box strong{color:var(--text)}
-.info-box a{color:var(--accent);text-decoration:none}
+.copy-row{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap}
+.copy-val{font-family:'Space Mono',monospace;font-size:12px;color:var(--accent);background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:5px 10px;flex:1;word-break:break-all}
+.copy-btn{background:var(--accent);border:none;color:#fff;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'Space Grotesk',sans-serif}
+.copy-btn:hover{opacity:.85}
 
 /* TOAST */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--done);color:#0d0f14;font-weight:700;font-size:13px;padding:10px 22px;border-radius:99px;transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:999;pointer-events:none}
 .toast.show{transform:translateX(-50%) translateY(0)}
-.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:16px;color:var(--muted)}
-.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -172,405 +181,364 @@ main{max-width:1100px;margin:0 auto;padding:24px 16px}
 
 <main id="mainContent">
 
-  <!-- SETUP SCREEN -->
-  <div id="setupScreen">
-    <div class="setup-wrap">
-      <h1>☁️ Connect Cloud Storage</h1>
-      <p>Your data will be saved to a <strong>GitHub Gist</strong> — a free private file in your GitHub account. Works on every device, never gets deleted.</p>
+<!-- ══════════════ SETUP SCREEN ══════════════ -->
+<div id="setupScreen">
+<div class="setup-outer">
+<div class="setup-wrap">
+  <h1>☁️ Set Up Cloud Sync</h1>
+  <p>Your habits will sync across <strong>all your devices</strong> (mobile, laptop, PC) through a free private GitHub Gist.</p>
 
-      <div class="setup-step">
-        <div class="step-num">1</div>
-        <div class="step-text">Go to <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a> and create a token.<br>
-        Check only <strong>gist</strong> scope. Set expiration to "No expiration".</div>
-      </div>
-      <div class="setup-step">
-        <div class="step-num">2</div>
-        <div class="step-text">Paste the token below. It starts with <code style="color:var(--gold);font-family:'Space Mono',monospace">ghp_</code></div>
-      </div>
-      <div class="setup-step">
-        <div class="step-num">3</div>
-        <div class="step-text">Click Connect — a private Gist is created automatically to store your data.</div>
-      </div>
+  <div class="setup-tabs">
+    <button class="setup-tab active" onclick="setTab('new',this)">🆕 First time setup</button>
+    <button class="setup-tab" onclick="setTab('existing',this)">🔁 Already set up on another device</button>
+  </div>
 
-      <div class="setup-input-row">
-        <div>
-          <div class="setup-label">GitHub Personal Access Token</div>
-          <input class="setup-input" type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off"/>
-        </div>
-        <div id="gistIdRow" style="display:none">
-          <div class="setup-label">Gist ID (if you already have one)</div>
-          <input class="setup-input" type="text" id="gistIdInput" placeholder="Leave blank to create new"/>
-        </div>
-        <button class="setup-btn" onclick="connect()">Connect to GitHub Gist →</button>
-        <div id="setupError" style="color:var(--accent2);font-size:13px;text-align:center;display:none"></div>
+  <!-- NEW DEVICE TAB -->
+  <div id="tab-new">
+    <div class="step-box">
+      <h3>Step 1 — Create a GitHub token</h3>
+      <p>Open this link (must be logged into GitHub):<br>
+      <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a><br><br>
+      Fill in exactly:<br>
+      • <strong>Note:</strong> Habit Tracker<br>
+      • <strong>Expiration:</strong> <code>No expiration</code><br>
+      • <strong>Scopes:</strong> tick only <code>✅ gist</code><br>
+      • Scroll down → click <strong>"Generate token"</strong></p>
+    </div>
+    <div class="step-box">
+      <h3>Step 2 — Copy &amp; paste the token</h3>
+      <p>The token shown starts with <code>ghp_</code> — copy the full thing.
+      <span class="warn">⚠ GitHub shows it only once. Copy before leaving that page!</span></p>
+    </div>
+    <div style="margin-bottom:12px">
+      <div class="setup-label">Your token</div>
+      <input class="setup-input" type="text" id="tokenInputNew" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" oninput="validateToken(this,'hintNew')"/>
+      <div class="token-hint" id="hintNew" style="color:var(--muted)">Paste your token above</div>
+    </div>
+    <button class="setup-btn" id="btnNew" onclick="connectNew()">Connect &amp; Create Cloud Storage →</button>
+    <div class="err-box" id="errNew"></div>
+  </div>
+
+  <!-- EXISTING DEVICE TAB -->
+  <div id="tab-existing" style="display:none">
+    <div class="step-box">
+      <h3>Already connected on another device?</h3>
+      <p>Go to <strong>Manage → Cloud Info</strong> on your other device and copy the <strong>Token</strong> and <strong>Gist ID</strong> shown there. Paste both below to link this device to the same data.</p>
+    </div>
+    <div style="margin-bottom:12px">
+      <div class="setup-label">Token (from other device)</div>
+      <input class="setup-input" type="text" id="tokenInputEx" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" oninput="validateToken(this,'hintEx')"/>
+      <div class="token-hint" id="hintEx" style="color:var(--muted)">Paste your token</div>
+    </div>
+    <div style="margin-bottom:12px">
+      <div class="setup-label">Gist ID (from other device)</div>
+      <input class="setup-input" type="text" id="gistIdEx" placeholder="e.g. a1b2c3d4e5f6..."/>
+    </div>
+    <button class="setup-btn" id="btnEx" onclick="connectExisting()">Connect to Existing Data →</button>
+    <div class="err-box" id="errEx"></div>
+  </div>
+
+  <div class="setup-note">🔒 Token is stored only in your browser. It goes directly to GitHub's API — nothing else sees it.</div>
+</div>
+</div>
+</div>
+
+<!-- LOADING -->
+<div id="loadingScreen" style="display:none">
+  <div class="loading"><div class="spinner"></div><span id="loadingMsg">Connecting to GitHub…</span></div>
+</div>
+
+<!-- ══════════════ APP VIEWS ══════════════ -->
+<div id="appViews" style="display:none">
+
+  <!-- TODAY -->
+  <div class="view active" id="view-today">
+    <div class="today-header">
+      <div class="today-title">
+        <h1 id="greeting">Good morning, Sahil 👋</h1>
+        <p id="todaySub">Let's make today count.</p>
       </div>
-      <div class="setup-note">🔒 Your token is stored only in your browser's localStorage — never sent anywhere except GitHub's API.</div>
-      <div style="text-align:center;margin-top:16px">
-        <span style="font-size:12px;color:var(--muted);cursor:pointer;text-decoration:underline" onclick="toggleGistInput()">Already have a Gist ID? Click here</span>
+      <div class="ring-wrap">
+        <svg width="76" height="76" viewBox="0 0 76 76">
+          <circle cx="38" cy="38" r="32" fill="none" stroke="#252a3a" stroke-width="7"/>
+          <circle cx="38" cy="38" r="32" fill="none" stroke="url(#rg)" stroke-width="7" stroke-linecap="round" stroke-dasharray="201" id="ringArc" stroke-dashoffset="201"/>
+          <defs><linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#6c63ff"/><stop offset="100%" stop-color="#43e97b"/></linearGradient></defs>
+        </svg>
+        <div class="ring-label"><span id="ringPct">0%</span><small>done</small></div>
       </div>
+    </div>
+    <div class="sh"><div class="ln"></div><h2>Daily Habits</h2><div class="ln"></div></div>
+    <div class="habits-grid" id="habitsGrid"></div>
+  </div>
+
+  <!-- MONTHLY -->
+  <div class="view" id="view-monthly">
+    <div class="cal-nav"><button class="cal-btn" onclick="monthlyNav(-1)">‹</button><h2 id="monthlyLabel"></h2><button class="cal-btn" onclick="monthlyNav(1)">›</button></div>
+    <div class="stats-row" id="monthlyStats"></div>
+    <div class="sh"><div class="ln"></div><h2>Habit Completion</h2><div class="ln"></div></div>
+    <div id="monthlyHabitList"></div>
+    <div class="sh"><div class="ln"></div><h2>Day-by-Day</h2><div class="ln"></div></div>
+    <div class="cal-grid" id="monthlyCalGrid"></div>
+    <div id="monthlyDayDetail"></div>
+  </div>
+
+  <!-- YEARLY -->
+  <div class="view" id="view-yearly">
+    <div class="year-nav"><button class="cal-btn" onclick="yearlyNav(-1)">‹</button><h2 id="yearlyLabel"></h2><button class="cal-btn" onclick="yearlyNav(1)">›</button></div>
+    <div class="stats-row" id="yearlyStats"></div>
+    <div class="sh"><div class="ln"></div><h2>Activity Heatmap</h2><div class="ln"></div></div>
+    <div class="heatmap-wrap"><div class="heatmap" id="heatmap"></div></div>
+    <div class="hm-legend">Less <div class="hm-legend-cells"><div class="hm-legend-cell hm-0"></div><div class="hm-legend-cell hm-1"></div><div class="hm-legend-cell hm-2"></div><div class="hm-legend-cell hm-3"></div><div class="hm-legend-cell hm-4"></div><div class="hm-legend-cell hm-5"></div></div> More</div>
+    <div class="sh"><div class="ln"></div><h2>Month-by-Month</h2><div class="ln"></div></div>
+    <div class="year-months" id="yearMonths"></div>
+    <div class="sh"><div class="ln"></div><h2>Best Habits This Year</h2><div class="ln"></div></div>
+    <div id="yearlyHabitList"></div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div class="view" id="view-calendar">
+    <div class="cal-nav"><button class="cal-btn" onclick="calNav(-1)">‹</button><h2 id="calLabel"></h2><button class="cal-btn" onclick="calNav(1)">›</button></div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div id="calDayDetail"></div>
+  </div>
+
+  <!-- MANAGE -->
+  <div class="view" id="view-manage">
+    <div class="sh" style="margin-top:0"><div class="ln"></div><h2>Cloud Sync Info</h2><div class="ln"></div></div>
+    <div class="info-box">
+      <strong>✅ Syncing to GitHub Gist</strong> — open this app on any device and enter the credentials below to get the same data everywhere.<br><br>
+      <strong>Token</strong> — paste this on new devices:
+      <div class="copy-row"><span class="copy-val" id="tokenDisplay">—</span><button class="copy-btn" onclick="copyVal('tokenDisplay','copy-btn-token')" id="copy-btn-token">Copy</button></div>
+      <strong style="display:block;margin-top:10px">Gist ID</strong> — paste this on new devices:
+      <div class="copy-row"><span class="copy-val" id="gistIdDisplay">—</span><button class="copy-btn" onclick="copyVal('gistIdDisplay','copy-btn-gist')" id="copy-btn-gist">Copy</button></div>
+    </div>
+    <div class="data-actions">
+      <button class="action-btn" onclick="forcSync()">🔄 Force Sync Now</button>
+      <button class="action-btn" onclick="exportJSON()">⬇ Export JSON Backup</button>
+      <button class="action-btn danger" onclick="disconnectGist()">⚡ Disconnect</button>
+    </div>
+    <div class="sh"><div class="ln"></div><h2>Your Habits</h2><div class="ln"></div></div>
+    <div id="manageList"></div>
+    <div class="sh"><div class="ln"></div><h2>Add New Habit</h2><div class="ln"></div></div>
+    <div class="add-form">
+      <select id="newEmoji"><option>📖</option><option>🕌</option><option>📚</option><option>🧹</option><option>📈</option><option>🧘</option><option>🏋️</option><option>😴</option><option>😤</option><option>💼</option><option>💊</option><option>💇</option><option>🚶</option><option>💧</option><option>✍️</option><option>🎯</option><option>🌱</option><option>🔥</option><option>🎵</option><option>🍎</option></select>
+      <input type="text" id="newHabitName" placeholder="New habit name..." maxlength="50" onkeydown="if(event.key==='Enter')addHabit()"/>
+      <button class="add-btn" onclick="addHabit()">Add Habit</button>
     </div>
   </div>
 
-  <!-- LOADING -->
-  <div id="loadingScreen" style="display:none">
-    <div class="loading"><div class="spinner"></div><span>Syncing your data from GitHub…</span></div>
-  </div>
-
-  <!-- APP VIEWS -->
-  <div id="appViews" style="display:none">
-
-    <!-- TODAY -->
-    <div class="view active" id="view-today">
-      <div class="today-header">
-        <div class="today-title">
-          <h1 id="greeting">Good morning, Sahil 👋</h1>
-          <p id="todaySub">Let's make today count.</p>
-        </div>
-        <div class="ring-wrap">
-          <svg width="76" height="76" viewBox="0 0 76 76">
-            <circle cx="38" cy="38" r="32" fill="none" stroke="#252a3a" stroke-width="7"/>
-            <circle cx="38" cy="38" r="32" fill="none" stroke="url(#rg)" stroke-width="7" stroke-linecap="round"
-              stroke-dasharray="201" id="ringArc" stroke-dashoffset="201"/>
-            <defs><linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#6c63ff"/><stop offset="100%" stop-color="#43e97b"/>
-            </linearGradient></defs>
-          </svg>
-          <div class="ring-label"><span id="ringPct">0%</span><small>done</small></div>
-        </div>
-      </div>
-      <div class="sh"><div class="ln"></div><h2>Daily Habits</h2><div class="ln"></div></div>
-      <div class="habits-grid" id="habitsGrid"></div>
-    </div>
-
-    <!-- MONTHLY -->
-    <div class="view" id="view-monthly">
-      <div class="cal-nav">
-        <button class="cal-btn" onclick="monthlyNav(-1)">‹</button>
-        <h2 id="monthlyLabel"></h2>
-        <button class="cal-btn" onclick="monthlyNav(1)">›</button>
-      </div>
-      <div class="stats-row" id="monthlyStats"></div>
-      <div class="sh"><div class="ln"></div><h2>Habit Completion</h2><div class="ln"></div></div>
-      <div id="monthlyHabitList"></div>
-      <div class="sh"><div class="ln"></div><h2>Day-by-Day</h2><div class="ln"></div></div>
-      <div class="cal-grid" id="monthlyCalGrid"></div>
-      <div id="monthlyDayDetail"></div>
-    </div>
-
-    <!-- YEARLY -->
-    <div class="view" id="view-yearly">
-      <div class="year-nav">
-        <button class="cal-btn" onclick="yearlyNav(-1)">‹</button>
-        <h2 id="yearlyLabel"></h2>
-        <button class="cal-btn" onclick="yearlyNav(1)">›</button>
-      </div>
-      <div class="stats-row" id="yearlyStats"></div>
-      <div class="sh"><div class="ln"></div><h2>Activity Heatmap</h2><div class="ln"></div></div>
-      <div class="heatmap-wrap"><div class="heatmap" id="heatmap"></div></div>
-      <div class="hm-legend">Less <div class="hm-legend-cells">
-        <div class="hm-legend-cell hm-0"></div><div class="hm-legend-cell hm-1"></div>
-        <div class="hm-legend-cell hm-2"></div><div class="hm-legend-cell hm-3"></div>
-        <div class="hm-legend-cell hm-4"></div><div class="hm-legend-cell hm-5"></div>
-      </div> More</div>
-      <div class="sh"><div class="ln"></div><h2>Month-by-Month</h2><div class="ln"></div></div>
-      <div class="year-months" id="yearMonths"></div>
-      <div class="sh"><div class="ln"></div><h2>Best Habits This Year</h2><div class="ln"></div></div>
-      <div id="yearlyHabitList"></div>
-    </div>
-
-    <!-- CALENDAR -->
-    <div class="view" id="view-calendar">
-      <div class="cal-nav">
-        <button class="cal-btn" onclick="calNav(-1)">‹</button>
-        <h2 id="calLabel"></h2>
-        <button class="cal-btn" onclick="calNav(1)">›</button>
-      </div>
-      <div class="cal-grid" id="calGrid"></div>
-      <div id="calDayDetail"></div>
-    </div>
-
-    <!-- MANAGE -->
-    <div class="view" id="view-manage">
-      <div class="sh" style="margin-top:0"><div class="ln"></div><h2>Cloud Storage Info</h2><div class="ln"></div></div>
-      <div class="info-box">
-        <strong>✅ Data saved to GitHub Gist</strong> — your habits sync across all devices automatically.<br>
-        Gist ID: <strong id="gistIdDisplay" style="color:var(--accent);font-family:'Space Mono',monospace">—</strong><br>
-        View it at: <a id="gistLink" href="#" target="_blank" style="font-family:'Space Mono',monospace">github.com/gist/…</a>
-      </div>
-      <div class="data-actions">
-        <button class="action-btn" onclick="forcSync()">🔄 Force Sync</button>
-        <button class="action-btn" onclick="exportJSON()">⬇ Export JSON backup</button>
-        <button class="action-btn danger" onclick="disconnectGist()">⚡ Disconnect Gist</button>
-      </div>
-      <div class="sh"><div class="ln"></div><h2>Your Habits</h2><div class="ln"></div></div>
-      <div id="manageList"></div>
-      <div class="sh"><div class="ln"></div><h2>Add New Habit</h2><div class="ln"></div></div>
-      <div class="add-form">
-        <select id="newEmoji">
-          <option>📖</option><option>🕌</option><option>📚</option><option>🧹</option>
-          <option>📈</option><option>🧘</option><option>🏋️</option><option>😴</option>
-          <option>😤</option><option>💼</option><option>💊</option><option>💇</option>
-          <option>🚶</option><option>💧</option><option>✍️</option><option>🎯</option>
-          <option>🌱</option><option>🔥</option><option>🎵</option><option>🍎</option>
-        </select>
-        <input type="text" id="newHabitName" placeholder="New habit name..." maxlength="50" onkeydown="if(event.key==='Enter')addHabit()"/>
-        <button class="add-btn" onclick="addHabit()">Add Habit</button>
-      </div>
-    </div>
-
-  </div><!-- /appViews -->
+</div><!-- /appViews -->
 </main>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ═══════════════════════════════════════════
-//  CONSTANTS & STATE
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════
 const LS_TOKEN   = 'sht_ghtoken';
 const LS_GIST_ID = 'sht_gistid';
 const GIST_FILE  = 'sahil_habits.json';
 const NOW        = new Date();
-
+const MONTHS     = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTHS_S   = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const DEFAULT_HABITS = [
-  {id:1,name:'Reading',emoji:'📖'},
-  {id:2,name:'Go to mandir',emoji:'🕌'},
-  {id:3,name:'English study / self-improvement',emoji:'📚'},
-  {id:4,name:'Keep it clean',emoji:'🧹'},
-  {id:5,name:'Trading study',emoji:'📈'},
-  {id:6,name:'Short meditation',emoji:'🧘'},
-  {id:7,name:'Gym',emoji:'🏋️'},
-  {id:8,name:'Sleep on time',emoji:'😴'},
-  {id:9,name:'Control anger',emoji:'😤'},
-  {id:10,name:'Interview study',emoji:'💼'},
-  {id:11,name:'Morning hair serum',emoji:'💇'},
-  {id:12,name:'Night hair serum',emoji:'💇'},
+  {id:1,name:'Reading',emoji:'📖'},{id:2,name:'Go to mandir',emoji:'🕌'},
+  {id:3,name:'English study / self-improvement',emoji:'📚'},{id:4,name:'Keep it clean',emoji:'🧹'},
+  {id:5,name:'Trading study',emoji:'📈'},{id:6,name:'Short meditation',emoji:'🧘'},
+  {id:7,name:'Gym',emoji:'🏋️'},{id:8,name:'Sleep on time',emoji:'😴'},
+  {id:9,name:'Control anger',emoji:'😤'},{id:10,name:'Interview study',emoji:'💼'},
+  {id:11,name:'Morning hair serum',emoji:'💇'},{id:12,name:'Night hair serum',emoji:'💇'},
   {id:13,name:'Afternoon medicine',emoji:'💊'},
 ];
 
-const MONTHS       = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+let ghToken='', gistId='', db={habits:DEFAULT_HABITS,log:{}}, saveTimer=null;
 
-let ghToken = '';
-let gistId  = '';
-let db = { habits: DEFAULT_HABITS, log: {} };
-let saveTimer = null;
-
-// ═══════════════════════════════════════════
-//  GITHUB GIST API
-// ═══════════════════════════════════════════
-async function gistFetch(method, path, body) {
-  const res = await fetch(`https://api.github.com${path}`, {
+// ═══════════════════════════════════
+// GITHUB API
+// ═══════════════════════════════════
+async function gApi(method, path, body){
+  const r = await fetch('https://api.github.com'+path,{
     method,
-    headers: {
-      'Authorization': `Bearer ${ghToken}`,
-      'Accept': 'application/vnd.github+json',
-      'Content-Type': 'application/json',
-      'X-GitHub-Api-Version': '2022-11-28'
-    },
-    body: body ? JSON.stringify(body) : undefined
+    headers:{'Authorization':'token '+ghToken,'Accept':'application/vnd.github+json','Content-Type':'application/json'},
+    body: body?JSON.stringify(body):undefined
   });
-  if (!res.ok) throw new Error(`GitHub API ${res.status}: ${await res.text()}`);
-  return res.json();
+  if(!r.ok){let m='GitHub error '+r.status;try{m=(await r.json()).message||m;}catch{}throw new Error(m);}
+  return r.json();
 }
 
-async function createGist() {
-  const data = await gistFetch('POST', '/gists', {
-    description: 'Sahil Habit Tracker Data',
-    public: false,
-    files: { [GIST_FILE]: { content: JSON.stringify({ habits: DEFAULT_HABITS, log: {} }, null, 2) } }
-  });
-  return data.id;
+async function verifyToken(){
+  const r=await fetch('https://api.github.com/user',{headers:{'Authorization':'token '+ghToken,'Accept':'application/vnd.github+json'}});
+  if(!r.ok)throw new Error(r.status===401?'Token rejected (401) — make sure you copied the full token starting with ghp_':'GitHub error '+r.status);
 }
 
-async function loadGist() {
-  const data = await gistFetch('GET', `/gists/${gistId}`);
-  const content = data.files[GIST_FILE]?.content;
-  if (!content) throw new Error('Gist file not found');
-  return JSON.parse(content);
+async function createGist(){
+  const d=await gApi('POST','/gists',{description:'Sahil Habit Tracker',public:false,files:{[GIST_FILE]:{content:JSON.stringify({habits:DEFAULT_HABITS,log:{}},null,2)}}});
+  return d.id;
 }
 
-async function saveGist() {
-  setSyncBadge('syncing', '↑ saving…');
-  await gistFetch('PATCH', `/gists/${gistId}`, {
-    files: { [GIST_FILE]: { content: JSON.stringify(db, null, 2) } }
-  });
-  setSyncBadge('synced', '✓ synced');
+async function loadFromGist(){
+  const d=await gApi('GET','/gists/'+gistId);
+  const c=d.files[GIST_FILE]?.content;
+  if(!c)throw new Error('Data file not found in Gist');
+  return JSON.parse(c);
 }
 
-// debounced save — waits 1.5s after last change
-function scheduleSave() {
+async function saveToGist(){
+  setSyncBadge('syncing','↑ saving…');
+  await gApi('PATCH','/gists/'+gistId,{files:{[GIST_FILE]:{content:JSON.stringify(db,null,2)}}});
+  setSyncBadge('synced','✓ synced');
+}
+
+function scheduleSave(){
   clearTimeout(saveTimer);
-  setSyncBadge('syncing', '↑ pending…');
-  saveTimer = setTimeout(async () => {
-    try { await saveGist(); }
-    catch(e) { setSyncBadge('error', '⚠ save failed'); showToast('⚠ Could not save to GitHub!'); }
-  }, 1500);
+  setSyncBadge('syncing','↑ pending…');
+  saveTimer=setTimeout(async()=>{
+    try{await saveToGist();}
+    catch(e){setSyncBadge('error','⚠ save failed');showToast('⚠ Could not save to GitHub!');}
+  },1500);
 }
 
-// ═══════════════════════════════════════════
-//  SETUP / CONNECT
-// ═══════════════════════════════════════════
-function toggleGistInput() {
-  const row = document.getElementById('gistIdRow');
-  row.style.display = row.style.display === 'none' ? 'block' : 'none';
+// ═══════════════════════════════════
+// SETUP TABS
+// ═══════════════════════════════════
+function setTab(name, btn){
+  document.querySelectorAll('.setup-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-new').style.display     = name==='new'?'block':'none';
+  document.getElementById('tab-existing').style.display= name==='existing'?'block':'none';
 }
 
-async function connect() {
-  const token = document.getElementById('tokenInput').value.trim();
-  const existingGist = document.getElementById('gistIdInput').value.trim();
-  const errEl = document.getElementById('setupError');
-  errEl.style.display = 'none';
+function validateToken(input, hintId){
+  const hint=document.getElementById(hintId), v=input.value.trim();
+  if(!v){hint.style.color='var(--muted)';hint.textContent='Paste your token above';return;}
+  if(!v.startsWith('ghp_')){hint.style.color='var(--accent2)';hint.textContent='⚠ Should start with ghp_ — did you copy the full token?';return;}
+  if(v.length<30){hint.style.color='var(--gold)';hint.textContent='Looks short — copy the full token from GitHub';return;}
+  hint.style.color='var(--done)';hint.textContent='✓ Token format looks correct!';
+}
 
-  if (!token) { errEl.textContent = 'Please enter your GitHub token.'; errEl.style.display='block'; return; }
-
-  ghToken = token;
-  show('loadingScreen');
-  hide('setupScreen');
-
-  try {
-    if (existingGist) {
-      gistId = existingGist;
-      db = await loadGist();
-    } else {
-      gistId = await createGist();
-      db = { habits: DEFAULT_HABITS, log: {} };
-    }
-    localStorage.setItem(LS_TOKEN, ghToken);
-    localStorage.setItem(LS_GIST_ID, gistId);
+async function connectNew(){
+  const token=document.getElementById('tokenInputNew').value.trim();
+  if(!token){showSetupErr('errNew','Please paste your GitHub token.');return;}
+  if(!token.startsWith('ghp_')){showSetupErr('errNew','Token should start with ghp_ — make sure you copied the full thing from GitHub.');return;}
+  ghToken=token;
+  startLoading('Creating your cloud storage…');
+  try{
+    await verifyToken();
+    gistId=await createGist();
+    db={habits:DEFAULT_HABITS,log:{}};
+    saveCredentials();
     launchApp();
-  } catch(e) {
-    hide('loadingScreen');
-    show('setupScreen');
-    errEl.textContent = 'Connection failed: ' + e.message + '. Check your token has "gist" scope.';
-    errEl.style.display = 'block';
-    ghToken = ''; gistId = '';
-  }
+  }catch(e){stopLoading();showSetupErr('errNew',e.message);ghToken='';}
 }
 
-async function init() {
-  const savedToken  = localStorage.getItem(LS_TOKEN);
-  const savedGistId = localStorage.getItem(LS_GIST_ID);
+async function connectExisting(){
+  const token=document.getElementById('tokenInputEx').value.trim();
+  const gist =document.getElementById('gistIdEx').value.trim();
+  if(!token){showSetupErr('errEx','Please paste your token.');return;}
+  if(!token.startsWith('ghp_')){showSetupErr('errEx','Token should start with ghp_');return;}
+  if(!gist){showSetupErr('errEx','Please paste the Gist ID.');return;}
+  ghToken=token; gistId=gist;
+  startLoading('Loading your data from GitHub…');
+  try{
+    await verifyToken();
+    db=await loadFromGist();
+    saveCredentials();
+    launchApp();
+  }catch(e){stopLoading();showSetupErr('errEx',e.message);ghToken='';gistId='';}
+}
 
-  if (savedToken && savedGistId) {
-    ghToken = savedToken;
-    gistId  = savedGistId;
-    show('loadingScreen');
-    hide('setupScreen');
-    try {
-      db = await loadGist();
-      launchApp();
-    } catch(e) {
-      hide('loadingScreen');
-      show('setupScreen');
-      showToast('⚠ Could not load from GitHub. Re-connect below.');
-      localStorage.removeItem(LS_TOKEN);
-      localStorage.removeItem(LS_GIST_ID);
+function showSetupErr(id, msg){document.getElementById(id).textContent=msg;document.getElementById(id).style.display='block';}
+function startLoading(msg){document.getElementById('loadingMsg').textContent=msg;show('loadingScreen');hide('setupScreen');}
+function stopLoading(){hide('loadingScreen');show('setupScreen');}
+function saveCredentials(){localStorage.setItem(LS_TOKEN,ghToken);localStorage.setItem(LS_GIST_ID,gistId);}
+
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
+async function init(){
+  const t=localStorage.getItem(LS_TOKEN), g=localStorage.getItem(LS_GIST_ID);
+  if(t&&g){
+    ghToken=t; gistId=g;
+    startLoading('Syncing your data from GitHub…');
+    try{db=await loadFromGist();launchApp();}
+    catch(e){
+      stopLoading();
+      showToast('Could not load from GitHub — please reconnect');
+      localStorage.removeItem(LS_TOKEN); localStorage.removeItem(LS_GIST_ID);
     }
-  } else {
-    show('setupScreen');
-  }
+  } else show('setupScreen');
 }
 
-function launchApp() {
-  hide('setupScreen'); hide('loadingScreen');
-  show('appViews');
-  document.getElementById('navTabs').style.display = 'flex';
-  document.getElementById('syncBadge').style.display = 'block';
-  setSyncBadge('synced', '✓ synced');
-  document.getElementById('gistIdDisplay').textContent = gistId;
-  document.getElementById('gistLink').href = `https://gist.github.com/${gistId}`;
-  document.getElementById('gistLink').textContent = `gist.github.com/${gistId.slice(0,10)}…`;
+function launchApp(){
+  hide('setupScreen');hide('loadingScreen');show('appViews');
+  document.getElementById('navTabs').style.display='flex';
+  document.getElementById('syncBadge').style.display='block';
+  setSyncBadge('synced','✓ synced');
   renderToday();
 }
 
-function disconnectGist() {
-  if (!confirm('Disconnect? Your data stays in the Gist — you can reconnect later.')) return;
-  localStorage.removeItem(LS_TOKEN);
-  localStorage.removeItem(LS_GIST_ID);
-  location.reload();
+// ═══════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════
+function show(id){document.getElementById(id).style.display='block';}
+function hide(id){document.getElementById(id).style.display='none';}
+function setSyncBadge(cls,txt){const e=document.getElementById('syncBadge');e.className='sync-badge '+cls;e.textContent=txt;}
+function fmtDate(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function todayKey(){return fmtDate(NOW);}
+function daysInMonth(y,m){return new Date(y,m+1,0).getDate();}
+function pctColor(p){return p>=80?'var(--done)':p>=50?'var(--gold)':'var(--accent2)';}
+function habits(){return db.habits;}
+function log(){return db.log;}
+
+function copyVal(spanId, btnId){
+  const txt=document.getElementById(spanId).textContent;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn=document.getElementById(btnId);
+    btn.textContent='Copied!';btn.style.background='var(--done)';btn.style.color='#0d0f14';
+    setTimeout(()=>{btn.textContent='Copy';btn.style.background='';btn.style.color='';},2000);
+  });
 }
 
-async function forcSync() {
-  try {
-    setSyncBadge('syncing', '↑ syncing…');
-    db = await loadGist();
-    await saveGist();
-    renderToday();
-    showToast('✓ Synced with GitHub!');
-  } catch(e) { showToast('⚠ Sync failed: ' + e.message); }
-}
-
-// ═══════════════════════════════════════════
-//  HELPERS
-// ═══════════════════════════════════════════
-function show(id){ document.getElementById(id).style.display='block'; }
-function hide(id){ document.getElementById(id).style.display='none'; }
-
-function setSyncBadge(cls, text) {
-  const el = document.getElementById('syncBadge');
-  el.className = 'sync-badge ' + cls;
-  el.textContent = text;
-}
-
-function fmtDate(d) {
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-function todayKey() { return fmtDate(NOW); }
-function daysInMonth(y,m) { return new Date(y,m+1,0).getDate(); }
-function pctColor(p) { return p>=80?'var(--done)':p>=50?'var(--gold)':'var(--accent2)'; }
-
-function habits() { return db.habits; }
-function log()    { return db.log; }
-
-function getStreak(hid) {
-  let s=0; const d=new Date(NOW); d.setDate(d.getDate()-1);
-  for(let i=0;i<365;i++){
-    const k=fmtDate(d);
-    if(log()[k]&&log()[k][hid]){s++;d.setDate(d.getDate()-1);}else break;
-  }
+function getStreak(hid){
+  let s=0;const d=new Date(NOW);d.setDate(d.getDate()-1);
+  for(let i=0;i<365;i++){const k=fmtDate(d);if(log()[k]&&log()[k][hid]){s++;d.setDate(d.getDate()-1);}else break;}
   return s;
 }
 
-function getMonthStats(year, month) {
-  const days=daysInMonth(year,month), habs=habits();
-  let totalDone=0,totalPossible=0,bestDay=0,bestDayNum=0,curStreak=0,maxStreak=0;
-  const habitCounts={}, dayData={};
+function getMonthStats(year,month){
+  const days=daysInMonth(year,month),habs=habits();
+  let totalDone=0,totalPossible=0,bestDay=0,bestDayNum=0,cur=0,maxStreak=0;
+  const habitCounts={},dayData={};
   habs.forEach(h=>habitCounts[h.id]=0);
   for(let d=1;d<=days;d++){
     const k=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const dl=log()[k]||{};
-    const done=habs.filter(h=>dl[h.id]).length;
+    const dl=log()[k]||{},done=habs.filter(h=>dl[h.id]).length;
     dayData[d]={done,total:habs.length,pct:habs.length?done/habs.length:0};
-    totalDone+=done; totalPossible+=habs.length;
+    totalDone+=done;totalPossible+=habs.length;
     if(done>bestDay){bestDay=done;bestDayNum=d;}
-    if(done>0){curStreak++;if(curStreak>maxStreak)maxStreak=curStreak;}else curStreak=0;
+    done>0?(cur++,cur>maxStreak&&(maxStreak=cur)):(cur=0);
     habs.forEach(h=>{if(dl[h.id])habitCounts[h.id]++;});
   }
-  return{days,totalDone,totalPossible,bestDay,bestDayNum,habitCounts,dayData,maxStreak,
-    pct:totalPossible?Math.round(totalDone/totalPossible*100):0};
+  return{days,totalDone,totalPossible,bestDay,bestDayNum,habitCounts,dayData,maxStreak,pct:totalPossible?Math.round(totalDone/totalPossible*100):0};
 }
 
-function getYearStats(year) {
-  const habitCounts={};
-  habits().forEach(h=>habitCounts[h.id]=0);
-  let totalDone=0,totalPossible=0;
-  const monthData=[];
+function getYearStats(year){
+  const habitCounts={};habits().forEach(h=>habitCounts[h.id]=0);
+  let totalDone=0,totalPossible=0;const monthData=[];
   for(let m=0;m<12;m++){
-    const s=getMonthStats(year,m);
-    monthData.push({month:m,...s});
-    totalDone+=s.totalDone; totalPossible+=s.totalPossible;
+    const s=getMonthStats(year,m);monthData.push({month:m,...s});
+    totalDone+=s.totalDone;totalPossible+=s.totalPossible;
     habits().forEach(h=>{habitCounts[h.id]=(habitCounts[h.id]||0)+(s.habitCounts[h.id]||0);});
   }
   const activeDays=Object.keys(log()).filter(k=>k.startsWith(year+'-')&&Object.values(log()[k]).some(Boolean)).length;
-  return{totalDone,totalPossible,monthData,habitCounts,activeDays,
-    pct:totalPossible?Math.round(totalDone/totalPossible*100):0};
+  return{totalDone,totalPossible,monthData,habitCounts,activeDays,pct:totalPossible?Math.round(totalDone/totalPossible*100):0};
 }
 
-// ═══════════════════════════════════════════
-//  NAV
-// ═══════════════════════════════════════════
-function switchView(name, btn) {
+// ═══════════════════════════════════
+// NAV
+// ═══════════════════════════════════
+function switchView(name,btn){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('view-'+name).classList.add('active');
@@ -578,56 +546,50 @@ function switchView(name, btn) {
   ({monthly:renderMonthly,yearly:renderYearly,calendar:renderCalendar,manage:renderManage})[name]?.();
 }
 
-// ═══════════════════════════════════════════
-//  TODAY
-// ═══════════════════════════════════════════
-function renderToday() {
+// ═══════════════════════════════════
+// TODAY
+// ═══════════════════════════════════
+function renderToday(){
   const h=NOW.getHours();
   document.getElementById('greeting').textContent=`${h<12?'Good morning':h<17?'Good afternoon':'Good evening'}, Sahil 👋`;
-  const dayLog=log()[todayKey()]||{}, habs=habits();
+  const dayLog=log()[todayKey()]||{},habs=habits();
   const done=habs.filter(h=>dayLog[h.id]).length;
   const pct=habs.length?Math.round(done/habs.length*100):0;
   document.getElementById('ringPct').textContent=pct+'%';
   document.getElementById('ringArc').setAttribute('stroke-dashoffset',201-201*pct/100);
-  document.getElementById('todaySub').textContent=pct===100?`🎉 Perfect day! All ${habs.length} habits done!`:`${done} of ${habs.length} habits done today`;
-  const grid=document.getElementById('habitsGrid');
-  grid.innerHTML='';
+  document.getElementById('todaySub').textContent=pct===100?`🎉 Perfect day! All ${habs.length} done!`:`${done} of ${habs.length} habits done today`;
+  const grid=document.getElementById('habitsGrid');grid.innerHTML='';
   habs.forEach(h=>{
-    const isDone=!!dayLog[h.id], streak=getStreak(h.id);
-    const card=document.createElement('div');
-    card.className='habit-card'+(isDone?' done':'');
-    card.innerHTML=`<div class="habit-check">${isDone?'✓':''}</div>
-      <div class="habit-info"><div class="habit-name">${h.name}</div>
-      <div class="habit-streak">${streak>0?`🔥 ${streak} day streak`:'Start your streak!'}</div></div>
-      <div class="habit-emoji">${h.emoji}</div>`;
+    const isDone=!!dayLog[h.id],streak=getStreak(h.id);
+    const card=document.createElement('div');card.className='habit-card'+(isDone?' done':'');
+    card.innerHTML=`<div class="habit-check">${isDone?'✓':''}</div><div class="habit-info"><div class="habit-name">${h.name}</div><div class="habit-streak">${streak>0?`🔥 ${streak} day streak`:'Start your streak!'}</div></div><div class="habit-emoji">${h.emoji}</div>`;
     card.onclick=()=>toggleHabit(h.id);
     grid.appendChild(card);
   });
 }
 
-function toggleHabit(id) {
+function toggleHabit(id){
   const k=todayKey();
   if(!db.log[k])db.log[k]={};
   db.log[k][id]=!db.log[k][id];
-  renderToday();
-  scheduleSave();
+  renderToday();scheduleSave();
   const h=habits().find(x=>x.id===id);
   if(db.log[k][id])showToast(`${h.emoji} ${h.name} — done!`);
 }
 
-// ═══════════════════════════════════════════
-//  MONTHLY
-// ═══════════════════════════════════════════
-let mvYear=NOW.getFullYear(), mvMonth=NOW.getMonth();
-function monthlyNav(d){mvMonth+=d;if(mvMonth>11){mvMonth=0;mvYear++;}if(mvMonth<0){mvMonth=11;mvYear--;}renderMonthly();}
+// ═══════════════════════════════════
+// MONTHLY
+// ═══════════════════════════════════
+let mvY=NOW.getFullYear(),mvM=NOW.getMonth();
+function monthlyNav(d){mvM+=d;if(mvM>11){mvM=0;mvY++;}if(mvM<0){mvM=11;mvY--;}renderMonthly();}
 function renderMonthly(){
-  document.getElementById('monthlyLabel').textContent=`${MONTHS[mvMonth]} ${mvYear}`;
-  const s=getMonthStats(mvYear,mvMonth);
+  document.getElementById('monthlyLabel').textContent=`${MONTHS[mvM]} ${mvY}`;
+  const s=getMonthStats(mvY,mvM);
   document.getElementById('monthlyStats').innerHTML=`
     <div class="stat-card"><div class="stat-label">Completion</div><div class="stat-value" style="color:${pctColor(s.pct)}">${s.pct}%</div><div class="stat-sub">${s.totalDone} of ${s.totalPossible}</div></div>
-    <div class="stat-card"><div class="stat-label">Best Day</div><div class="stat-value" style="color:var(--done)">${s.bestDay}</div><div class="stat-sub">${s.bestDay>0?MONTHS_SHORT[mvMonth]+' '+s.bestDayNum:'No data'}</div></div>
+    <div class="stat-card"><div class="stat-label">Best Day</div><div class="stat-value" style="color:var(--done)">${s.bestDay}</div><div class="stat-sub">${s.bestDay>0?MONTHS_S[mvM]+' '+s.bestDayNum:'No data'}</div></div>
     <div class="stat-card"><div class="stat-label">Best Streak</div><div class="stat-value" style="color:var(--gold)">${s.maxStreak}</div><div class="stat-sub">days in a row</div></div>
-    <div class="stat-card"><div class="stat-label">Active Days</div><div class="stat-value" style="color:var(--accent)">${Object.values(s.dayData).filter(d=>d.done>0).length}</div><div class="stat-sub">of ${s.days} days</div></div>`;
+    <div class="stat-card"><div class="stat-label">Active Days</div><div class="stat-value" style="color:var(--accent)">${Object.values(s.dayData).filter(d=>d.done>0).length}</div><div class="stat-sub">of ${s.days}</div></div>`;
   const list=document.getElementById('monthlyHabitList');list.innerHTML='';
   [...habits()].sort((a,b)=>(s.habitCounts[b.id]||0)-(s.habitCounts[a.id]||0)).forEach(h=>{
     const c=s.habitCounts[h.id]||0,p=Math.round(c/s.days*100);
@@ -637,74 +599,59 @@ function renderMonthly(){
   });
   const grid=document.getElementById('monthlyCalGrid');grid.innerHTML='';
   ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(l=>{const e=document.createElement('div');e.className='cal-day-label';e.textContent=l;grid.appendChild(e);});
-  const fd=new Date(mvYear,mvMonth,1).getDay();
+  const fd=new Date(mvY,mvM,1).getDay();
   for(let i=0;i<fd;i++){const e=document.createElement('div');e.className='cal-day empty';grid.appendChild(e);}
   for(let d=1;d<=s.days;d++){
-    const k=`${mvYear}-${String(mvMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const dd=s.dayData[d];
-    const el=document.createElement('div');
-    el.className='cal-day has-data'+(k===todayKey()?' today':'');
-    const dc=dd.done>0?(dd.pct>=.7?'dot-good':dd.pct>=.4?'dot-mid':'dot-low'):'';
-    el.innerHTML=`<span>${d}</span>${dd.done>0?`<div class="cal-dot ${dc}"></div>`:''}`;
+    const k=`${mvY}-${String(mvM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,dd=s.dayData[d];
+    const el=document.createElement('div');el.className='cal-day has-data'+(k===todayKey()?' today':'');
+    el.innerHTML=`<span>${d}</span>${dd.done>0?`<div class="cal-dot ${dd.pct>=.7?'dot-good':dd.pct>=.4?'dot-mid':'dot-low'}"></div>`:''}`;
     el.onclick=()=>{
       document.querySelectorAll('#monthlyCalGrid .cal-day').forEach(e=>e.classList.remove('selected'));
       el.classList.add('selected');
       const dl=log()[k]||{};
-      document.getElementById('monthlyDayDetail').innerHTML=`<div class="detail-panel"><h3>${MONTHS[mvMonth]} ${d}, ${mvYear} — ${dd.done}/${dd.total} done (${Math.round(dd.pct*100)}%)</h3><div class="habits-grid">${habits().map(h=>`<div class="habit-card${dl[h.id]?' done':''}"><div class="habit-check">${dl[h.id]?'✓':''}</div><div class="habit-info"><div class="habit-name">${h.name}</div></div><div class="habit-emoji">${h.emoji}</div></div>`).join('')}</div></div>`;
+      document.getElementById('monthlyDayDetail').innerHTML=`<div class="detail-panel"><h3>${MONTHS[mvM]} ${d}, ${mvY} — ${dd.done}/${dd.total} done (${Math.round(dd.pct*100)}%)</h3><div class="habits-grid">${habits().map(h=>`<div class="habit-card${dl[h.id]?' done':''}"><div class="habit-check">${dl[h.id]?'✓':''}</div><div class="habit-info"><div class="habit-name">${h.name}</div></div><div class="habit-emoji">${h.emoji}</div></div>`).join('')}</div></div>`;
     };
     grid.appendChild(el);
   }
   document.getElementById('monthlyDayDetail').innerHTML='';
 }
 
-// ═══════════════════════════════════════════
-//  YEARLY
-// ═══════════════════════════════════════════
-let vyYear=NOW.getFullYear();
-function yearlyNav(d){vyYear+=d;renderYearly();}
+// ═══════════════════════════════════
+// YEARLY
+// ═══════════════════════════════════
+let vyY=NOW.getFullYear();
+function yearlyNav(d){vyY+=d;renderYearly();}
 function renderYearly(){
-  document.getElementById('yearlyLabel').textContent=`Year ${vyYear}`;
-  const s=getYearStats(vyYear);
+  document.getElementById('yearlyLabel').textContent='Year '+vyY;
+  const s=getYearStats(vyY);
   document.getElementById('yearlyStats').innerHTML=`
-    <div class="stat-card"><div class="stat-label">Year Completion</div><div class="stat-value" style="color:${pctColor(s.pct)}">${s.pct}%</div><div class="stat-sub">${s.totalDone} total checks</div></div>
+    <div class="stat-card"><div class="stat-label">Year Completion</div><div class="stat-value" style="color:${pctColor(s.pct)}">${s.pct}%</div><div class="stat-sub">${s.totalDone} checks</div></div>
     <div class="stat-card"><div class="stat-label">Active Days</div><div class="stat-value" style="color:var(--accent)">${s.activeDays}</div><div class="stat-sub">days with activity</div></div>
     <div class="stat-card"><div class="stat-label">Habits</div><div class="stat-value" style="color:var(--gold)">${habits().length}</div><div class="stat-sub">being tracked</div></div>
-    <div class="stat-card"><div class="stat-label">Total Possible</div><div class="stat-value" style="color:var(--muted)">${s.totalPossible}</div><div class="stat-sub">habit-days in ${vyYear}</div></div>`;
-  // heatmap
+    <div class="stat-card"><div class="stat-label">Total Possible</div><div class="stat-value" style="color:var(--muted)">${s.totalPossible}</div><div class="stat-sub">habit-days</div></div>`;
   const hm=document.getElementById('heatmap');hm.innerHTML='';
-  const start=new Date(vyYear,0,1),pad=start.getDay();
-  const total=Math.ceil((pad+new Date(vyYear,11,31).getDate()+new Date(vyYear,11,30).getTime()/86400000- new Date(vyYear,0,0).getTime()/86400000)/7)*7;
-  // simpler: just iterate 53 weeks
+  const pad=new Date(vyY,0,1).getDay();
   for(let c=0;c<53;c++){
     const col=document.createElement('div');col.className='hm-col';
-    const lbl=document.createElement('div');lbl.className='hm-label';
-    let labelSet=false;
+    const lbl=document.createElement('div');lbl.className='hm-label';let ls=false;
     for(let r=0;r<7;r++){
-      const idx=c*7+r-pad;
-      const dd=new Date(vyYear,0,1+idx);
-      if(!labelSet&&dd.getFullYear()===vyYear&&dd.getDate()<=7){lbl.textContent=MONTHS_SHORT[dd.getMonth()];labelSet=true;}
+      const idx=c*7+r-pad,dd=new Date(vyY,0,1+idx);
+      if(!ls&&dd.getFullYear()===vyY&&dd.getDate()<=7){lbl.textContent=MONTHS_S[dd.getMonth()];ls=true;}
       const cell=document.createElement('div');
-      if(idx<0||dd.getFullYear()!==vyYear){cell.className='hm-cell hm-0';}
-      else{
-        const k=fmtDate(dd),dl=log()[k]||{};
-        const done=habits().filter(h=>dl[h.id]).length,tot=habits().length;
-        const lvl=tot===0?0:Math.min(5,Math.ceil(done/tot*5));
-        cell.className=`hm-cell hm-${lvl}`;cell.title=`${k}: ${done}/${tot}`;
-      }
+      if(idx<0||dd.getFullYear()!==vyY){cell.className='hm-cell hm-0';}
+      else{const k=fmtDate(dd),dl=log()[k]||{},done=habits().filter(h=>dl[h.id]).length,tot=habits().length;cell.className=`hm-cell hm-${tot===0?0:Math.min(5,Math.ceil(done/tot*5))}`;cell.title=`${k}: ${done}/${tot}`;}
       col.appendChild(cell);
     }
     hm.appendChild(lbl);hm.appendChild(col);
   }
-  // month cards
   const ym=document.getElementById('yearMonths');ym.innerHTML='';
   s.monthData.forEach(m=>{
     const p=m.totalPossible?Math.round(m.totalDone/m.totalPossible*100):0;
     const c=document.createElement('div');c.className='ym-card';
-    c.innerHTML=`<div class="ym-name">${MONTHS_SHORT[m.month]}</div><div class="ym-pct" style="color:${pctColor(p)}">${p}%</div><div class="ym-bar"><div class="ym-fill" style="width:${p}%"></div></div><div class="ym-checks">${m.totalDone} checks · ${m.days} days</div>`;
-    c.onclick=()=>{mvYear=vyYear;mvMonth=m.month;switchView('monthly',document.querySelector('[data-view=monthly]'));};
+    c.innerHTML=`<div class="ym-name">${MONTHS_S[m.month]}</div><div class="ym-pct" style="color:${pctColor(p)}">${p}%</div><div class="ym-bar"><div class="ym-fill" style="width:${p}%"></div></div><div class="ym-checks">${m.totalDone} checks · ${m.days} days</div>`;
+    c.onclick=()=>{mvY=vyY;mvM=m.month;switchView('monthly',document.querySelector('[data-view=monthly]'));};
     ym.appendChild(c);
   });
-  // habit list
   const yhl=document.getElementById('yearlyHabitList');yhl.innerHTML='';
   const td=s.monthData.reduce((a,m)=>a+m.days,0);
   [...habits()].sort((a,b)=>(s.habitCounts[b.id]||0)-(s.habitCounts[a.id]||0)).forEach(h=>{
@@ -715,40 +662,37 @@ function renderYearly(){
   });
 }
 
-// ═══════════════════════════════════════════
-//  CALENDAR
-// ═══════════════════════════════════════════
-let calYear=NOW.getFullYear(),calMonth=NOW.getMonth();
-function calNav(d){calMonth+=d;if(calMonth>11){calMonth=0;calYear++;}if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
+// ═══════════════════════════════════
+// CALENDAR
+// ═══════════════════════════════════
+let calY=NOW.getFullYear(),calM=NOW.getMonth();
+function calNav(d){calM+=d;if(calM>11){calM=0;calY++;}if(calM<0){calM=11;calY--;}renderCalendar();}
 function renderCalendar(){
-  document.getElementById('calLabel').textContent=`${MONTHS[calMonth]} ${calYear}`;
+  document.getElementById('calLabel').textContent=`${MONTHS[calM]} ${calY}`;
   const grid=document.getElementById('calGrid');grid.innerHTML='';
   ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(l=>{const e=document.createElement('div');e.className='cal-day-label';e.textContent=l;grid.appendChild(e);});
-  const fd=new Date(calYear,calMonth,1).getDay(),days=daysInMonth(calYear,calMonth),habs=habits();
+  const fd=new Date(calY,calM,1).getDay(),days=daysInMonth(calY,calM),habs=habits();
   for(let i=0;i<fd;i++){const e=document.createElement('div');e.className='cal-day empty';grid.appendChild(e);}
   for(let d=1;d<=days;d++){
-    const k=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const k=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const dl=log()[k]||{},done=habs.filter(h=>dl[h.id]).length,pct=habs.length?done/habs.length:0;
-    const el=document.createElement('div');
-    el.className='cal-day has-data'+(k===todayKey()?' today':'');
+    const el=document.createElement('div');el.className='cal-day has-data'+(k===todayKey()?' today':'');
     el.innerHTML=`<span>${d}</span>${done>0?`<div class="cal-dot ${pct>=.7?'dot-good':pct>=.4?'dot-mid':'dot-low'}"></div>`:''}`;
     el.onclick=()=>{
-      document.querySelectorAll('#calGrid .cal-day').forEach(e=>e.classList.remove('selected'));
-      el.classList.add('selected');
-      document.getElementById('calDayDetail').innerHTML=`<div class="detail-panel"><h3>${MONTHS[calMonth]} ${d}, ${calYear} — ${done}/${habs.length} done (${Math.round(pct*100)}%)</h3><div class="habits-grid">${habs.map(h=>`<div class="habit-card${dl[h.id]?' done':''}"><div class="habit-check">${dl[h.id]?'✓':''}</div><div class="habit-info"><div class="habit-name">${h.name}</div></div><div class="habit-emoji">${h.emoji}</div></div>`).join('')}</div></div>`;
+      document.querySelectorAll('#calGrid .cal-day').forEach(e=>e.classList.remove('selected'));el.classList.add('selected');
+      document.getElementById('calDayDetail').innerHTML=`<div class="detail-panel"><h3>${MONTHS[calM]} ${d}, ${calY} — ${done}/${habs.length} done (${Math.round(pct*100)}%)</h3><div class="habits-grid">${habs.map(h=>`<div class="habit-card${dl[h.id]?' done':''}"><div class="habit-check">${dl[h.id]?'✓':''}</div><div class="habit-info"><div class="habit-name">${h.name}</div></div><div class="habit-emoji">${h.emoji}</div></div>`).join('')}</div></div>`;
     };
     grid.appendChild(el);
   }
   document.getElementById('calDayDetail').innerHTML='';
 }
 
-// ═══════════════════════════════════════════
-//  MANAGE
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
+// MANAGE
+// ═══════════════════════════════════
 function renderManage(){
+  document.getElementById('tokenDisplay').textContent=ghToken;
   document.getElementById('gistIdDisplay').textContent=gistId;
-  document.getElementById('gistLink').href=`https://gist.github.com/${gistId}`;
-  document.getElementById('gistLink').textContent=`gist.github.com/${gistId.slice(0,12)}…`;
   const list=document.getElementById('manageList');list.innerHTML='';
   if(!habits().length){list.innerHTML='<div style="color:var(--muted);padding:20px;text-align:center">No habits yet.</div>';return;}
   habits().forEach(h=>{
@@ -757,46 +701,40 @@ function renderManage(){
     list.appendChild(row);
   });
 }
-
 function addHabit(){
   const name=document.getElementById('newHabitName').value.trim();
   const emoji=document.getElementById('newEmoji').value;
   if(!name){showToast('Enter a habit name!');return;}
   db.habits.push({id:Date.now(),name,emoji});
   document.getElementById('newHabitName').value='';
-  renderManage();renderToday();
-  scheduleSave();
+  renderManage();renderToday();scheduleSave();
   showToast(`${emoji} "${name}" added!`);
 }
-
 function deleteHabit(id){
   const h=habits().find(x=>x.id===id);
-  if(!confirm(`Remove "${h.name}"? Past logs stay.`))return;
+  if(!confirm(`Remove "${h.name}"?`))return;
   db.habits=db.habits.filter(x=>x.id!==id);
-  renderManage();renderToday();
-  scheduleSave();
-  showToast('Habit removed.');
+  renderManage();renderToday();scheduleSave();showToast('Habit removed.');
 }
-
+async function forcSync(){
+  try{setSyncBadge('syncing','↑ syncing…');db=await loadFromGist();await saveToGist();renderToday();showToast('✓ Synced!');}
+  catch(e){showToast('⚠ '+e.message);}
+}
 function exportJSON(){
   const b=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(b);
-  a.download=`sahil_habits_backup_${fmtDate(NOW)}.json`;a.click();
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`sahil_habits_backup_${fmtDate(NOW)}.json`;a.click();
   showToast('✓ Backup exported!');
 }
-
-// ═══════════════════════════════════════════
-//  TOAST
-// ═══════════════════════════════════════════
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2200);
+function disconnectGist(){
+  if(!confirm('Disconnect? Your data stays safe in the Gist.'))return;
+  localStorage.removeItem(LS_TOKEN);localStorage.removeItem(LS_GIST_ID);location.reload();
 }
 
-// ═══════════════════════════════════════════
-//  BOOT
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
+// TOAST
+// ═══════════════════════════════════
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
 init();
 </script>
 </body>
