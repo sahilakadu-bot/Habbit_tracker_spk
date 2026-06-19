@@ -300,22 +300,32 @@ let unsubHabits = null, unsubLog = null;
 // ══════════════════════════════════════════════
 function toggleMode(){ /* disabled */ }
 
-const ALLOWED_EMAIL = 'sahilakadu@gmail.com';
-
 async function doLogin(){
-  const email = document.getElementById('emailInp').value.trim().toLowerCase();
-  const pass  = document.getElementById('passInp').value;
-  const errEl = document.getElementById('authErr');
-  const btn   = document.getElementById('loginBtn');
-  errEl.style.display = 'none';
+  const pass = document.getElementById('passInp').value.trim();
+  const btn  = document.getElementById('loginBtn');
+  document.getElementById('authErr').style.display = 'none';
 
-  // 🔒 Block anyone who is not Sahil
-  if(email !== ALLOWED_EMAIL){
-    showAuthErr('🔒 This app is private. Only the owner can access it.');
-    return;
+  if(!pass){ showAuthErr('Please enter your password.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+
+  try{
+    await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+    await auth.signInWithEmailAndPassword('sahilakadu@gmail.com', pass);
+    // success — onAuthStateChanged will show the app
+  } catch(e){
+    btn.disabled = false;
+    btn.textContent = 'Sign In →';
+    const msgs = {
+      'auth/wrong-password'        : '❌ Wrong password. Try again.',
+      'auth/invalid-credential'    : '❌ Wrong password. Try again.',
+      'auth/user-not-found'        : '❌ Account not found. Create it in Firebase Console.',
+      'auth/too-many-requests'     : '⏳ Too many attempts. Wait a moment.',
+      'auth/network-request-failed': '❌ No internet connection.',
+    };
+    showAuthErr(msgs[e.code] || '❌ ' + e.message);
   }
-
-  // this block intentionally left clean — login handled above
 }
 
 function showAuthErr(msg){
