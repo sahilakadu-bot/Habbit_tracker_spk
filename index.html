@@ -122,6 +122,40 @@ main{max-width:1080px;margin:0 auto;padding:24px 16px}
 .actb{background:var(--s2);border:1px solid var(--bor);color:var(--txt);border-radius:8px;padding:8px 14px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;margin-right:8px;margin-bottom:8px}
 .actb:hover{border-color:var(--acc);color:var(--acc)}.actb.d{color:var(--red)}.actb.d:hover{border-color:var(--red)}
 .ib{background:var(--s2);border:1px solid var(--bor);border-radius:11px;padding:16px;margin-bottom:20px;font-size:13px;line-height:1.8}
+/* TODO */
+.todo-top{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.todo-inp{flex:1;min-width:180px;background:var(--s2);border:1px solid var(--bor);color:var(--txt);border-radius:9px;padding:11px 14px;font-family:'Space Grotesk',sans-serif;font-size:14px;outline:none}
+.todo-inp:focus{border-color:var(--acc)}
+.todo-sel{background:var(--s2);border:1px solid var(--bor);color:var(--txt);border-radius:9px;padding:11px 12px;font-family:'Space Grotesk',sans-serif;font-size:13px;outline:none}
+.todo-sel:focus{border-color:var(--acc)}
+.todo-add{background:var(--acc);border:none;color:#fff;border-radius:9px;padding:11px 20px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.todo-add:hover{opacity:.85}
+.tfilter{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.tf{padding:5px 14px;border-radius:99px;border:1px solid var(--bor);background:transparent;color:var(--mut);font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;cursor:pointer}
+.tf.active{background:var(--acc);color:#fff;border-color:var(--acc)}
+.tcard{background:var(--sur);border:1px solid var(--bor);border-radius:12px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;margin-bottom:8px;transition:all .2s}
+.tcard.done-t{opacity:.5}
+.tcard.done-t .ttext{text-decoration:line-through;color:var(--mut)}
+.tchk{width:22px;height:22px;border-radius:6px;border:2px solid var(--bor);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;margin-top:1px;transition:all .2s}
+.tchk.checked{background:var(--grn);border-color:var(--grn);color:#0d0f14}
+.tbody{flex:1;min-width:0}
+.ttext{font-size:14px;font-weight:500;line-height:1.4;word-break:break-word}
+.tmeta{display:flex;align-items:center;gap:8px;margin-top:5px;flex-wrap:wrap}
+.tpri{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;letter-spacing:.5px}
+.pri-high{background:rgba(255,101,132,.15);color:var(--red)}
+.pri-med{background:rgba(247,201,72,.15);color:var(--gold)}
+.pri-low{background:rgba(67,233,123,.15);color:var(--grn)}
+.tdate{font-size:11px;color:var(--mut)}
+.tdue{font-size:11px}
+.tdue.overdue{color:var(--red);font-weight:600}
+.tdue.today-due{color:var(--gold);font-weight:600}
+.tdue.upcoming{color:var(--grn)}
+.tdel{background:transparent;border:none;color:var(--mut);cursor:pointer;font-size:16px;padding:0 4px;flex-shrink:0;line-height:1}
+.tdel:hover{color:var(--red)}
+.tempty{text-align:center;padding:48px 20px;color:var(--mut)}
+.tempty div{font-size:40px;margin-bottom:12px}
+.tsummary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+@media(max-width:460px){.tsummary{grid-template-columns:1fr 1fr}}
 /* TOAST */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--grn);color:#0d0f14;font-weight:700;font-size:13px;padding:10px 22px;border-radius:99px;transition:transform .3s;z-index:999;pointer-events:none}
 .toast.show{transform:translateX(-50%) translateY(0)}
@@ -136,6 +170,7 @@ main{max-width:1080px;margin:0 auto;padding:24px 16px}
     <button class="nt"        data-v="monthly"  onclick="sw('monthly',this)">Monthly</button>
     <button class="nt"        data-v="yearly"   onclick="sw('yearly',this)">Yearly</button>
     <button class="nt"        data-v="calendar" onclick="sw('calendar',this)">Calendar</button>
+    <button class="nt"        data-v="todo"     onclick="sw('todo',this)">📋 Tasks</button>
     <button class="nt"        data-v="manage"   onclick="sw('manage',this)">Manage</button>
   </div>
   <div class="badge ok" id="badge" style="display:none">✓ live</div>
@@ -219,6 +254,29 @@ main{max-width:1080px;margin:0 auto;padding:24px 16px}
   <div class="view" id="view-calendar">
     <div class="cn"><button class="cb" onclick="calnav(-1)">‹</button><h2 id="calLbl"></h2><button class="cb" onclick="calnav(1)">›</button></div>
     <div class="cg" id="calGrid"></div><div id="calDay"></div>
+  </div>
+
+  <!-- TODO -->
+  <div class="view" id="view-todo">
+    <div class="tsummary" id="todoSummary"></div>
+    <div class="todo-top">
+      <input class="todo-inp" type="text" id="todoInp" placeholder="Add a new task..." onkeydown="if(event.key==='Enter')addTodo()"/>
+      <select class="todo-sel" id="todoPri">
+        <option value="high">🔴 High</option>
+        <option value="med" selected>🟡 Medium</option>
+        <option value="low">🟢 Low</option>
+      </select>
+      <input class="todo-inp" type="date" id="todoDue" style="max-width:160px"/>
+      <button class="todo-add" onclick="addTodo()">+ Add</button>
+    </div>
+    <div class="tfilter">
+      <button class="tf active" onclick="setFilter('all',this)">All</button>
+      <button class="tf" onclick="setFilter('pending',this)">⏳ Pending</button>
+      <button class="tf" onclick="setFilter('done',this)">✅ Done</button>
+      <button class="tf" onclick="setFilter('high',this)">🔴 High Priority</button>
+      <button class="tf" onclick="setFilter('overdue',this)">🚨 Overdue</button>
+    </div>
+    <div id="todoList"></div>
   </div>
 
   <!-- MANAGE -->
@@ -426,6 +484,7 @@ auth.onAuthStateChanged(async user => {
     document.getElementById('deviceInfo').textContent = device;
     listenHabits();
     listenLog();
+    listenTodos();
   } else {
     hide('loadScreen');
     show('authScreen');
@@ -662,6 +721,114 @@ async function exportJSON(){
 }
 function showNavEl(){document.getElementById('navEl').style.display='flex';}
 function showBadge(){document.getElementById('badge').style.display='block';}
+
+// ══════════════════════════════════════════════
+//  TODO / TASKS
+// ══════════════════════════════════════════════
+let todoFilter = 'all';
+
+function todosRef(){ return db.ref(`users/${uid}/todos`); }
+
+function listenTodos(){
+  todosRef().on('value', snap => {
+    renderTodos(snap.val() || {});
+  });
+}
+
+function setFilter(f, btn){
+  todoFilter = f;
+  document.querySelectorAll('.tf').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  todosRef().get().then(snap => renderTodos(snap.val() || {}));
+}
+
+async function addTodo(){
+  const text = document.getElementById('todoInp').value.trim();
+  if(!text){ showToast('Enter a task!'); return; }
+  const pri  = document.getElementById('todoPri').value;
+  const due  = document.getElementById('todoDue').value;
+  const id   = 't' + Date.now();
+  await todosRef().child(id).set({
+    id, text, pri, due: due||'', done: false,
+    createdAt: new Date().toISOString()
+  });
+  document.getElementById('todoInp').value = '';
+  document.getElementById('todoDue').value = '';
+  showToast('✅ Task added!');
+}
+
+async function toggleTodo(id, current){
+  await todosRef().child(id).update({ done: !current });
+}
+
+async function deleteTodo(id){
+  if(!confirm('Delete this task?')) return;
+  await todosRef().child(id).remove();
+}
+
+function renderTodos(data){
+  const today = new Date().toISOString().split('T')[0];
+  let todos = Object.values(data).sort((a,b) => {
+    // sort: pending first, then by priority, then by due date
+    if(a.done !== b.done) return a.done ? 1 : -1;
+    const po = {high:0, med:1, low:2};
+    if(po[a.pri] !== po[b.pri]) return po[a.pri] - po[b.pri];
+    if(a.due && b.due) return a.due.localeCompare(b.due);
+    return 0;
+  });
+
+  // summary counts
+  const total   = todos.length;
+  const done    = todos.filter(t=>t.done).length;
+  const pending = todos.filter(t=>!t.done).length;
+  const overdue = todos.filter(t=>!t.done&&t.due&&t.due<today).length;
+  document.getElementById('todoSummary').innerHTML = `
+    <div class="sc"><div class="scl">Pending</div><div class="scv" style="color:var(--gold)">${pending}</div><div class="scs">tasks to do</div></div>
+    <div class="sc"><div class="scl">Completed</div><div class="scv" style="color:var(--grn)">${done}</div><div class="scs">of ${total} total</div></div>
+    <div class="sc"><div class="scl">Overdue</div><div class="scv" style="color:var(--red)">${overdue}</div><div class="scs">need attention</div></div>`;
+
+  // apply filter
+  if(todoFilter === 'pending') todos = todos.filter(t=>!t.done);
+  else if(todoFilter === 'done') todos = todos.filter(t=>t.done);
+  else if(todoFilter === 'high') todos = todos.filter(t=>t.pri==='high'&&!t.done);
+  else if(todoFilter === 'overdue') todos = todos.filter(t=>!t.done&&t.due&&t.due<today);
+
+  const list = document.getElementById('todoList');
+  if(!todos.length){
+    list.innerHTML = `<div class="tempty"><div>${todoFilter==='overdue'?'🎉':'📋'}</div>${todoFilter==='overdue'?'No overdue tasks!':'No tasks here.'}</div>`;
+    return;
+  }
+
+  list.innerHTML = '';
+  todos.forEach(t => {
+    const priLabel = {high:'HIGH',med:'MEDIUM',low:'LOW'}[t.pri];
+    const priClass = {high:'pri-high',med:'pri-med',low:'pri-low'}[t.pri];
+    let dueHtml = '';
+    if(t.due){
+      if(t.due < today && !t.done) dueHtml = `<span class="tdue overdue">🚨 Overdue: ${fmtDue(t.due)}</span>`;
+      else if(t.due === today && !t.done) dueHtml = `<span class="tdue today-due">⏰ Due today!</span>`;
+      else dueHtml = `<span class="tdue ${t.done?'':'upcoming'}">📅 ${fmtDue(t.due)}</span>`;
+    }
+    const card = document.createElement('div');
+    card.className = 'tcard' + (t.done?' done-t':'');
+    card.innerHTML = `
+      <div class="tchk ${t.done?'checked':''}" onclick="toggleTodo('${t.id}',${t.done})">${t.done?'✓':''}</div>
+      <div class="tbody">
+        <div class="ttext">${t.text}</div>
+        <div class="tmeta">
+          <span class="tpri ${priClass}">${priLabel}</span>
+          ${dueHtml}
+        </div>
+      </div>
+      <button class="tdel" onclick="deleteTodo('${t.id}')">🗑</button>`;
+    list.appendChild(card);
+  });
+}
+
+function fmtDue(dateStr){
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+}
 
 // ══════════════════════════════════════════════
 //  TOAST
