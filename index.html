@@ -1246,13 +1246,22 @@
     }
 
     async function signOut() {
-      if (unsubHabits) unsubHabits();
-      if (unsubLog) unsubLog();
-      await auth.signOut();
-      hide('appEl'); hide('badge'); hide('navEl');
+      try {
+        if (unsubHabits) { unsubHabits(); unsubHabits = null; }
+        if (unsubLog) { unsubLog(); unsubLog = null; }
+        await auth.signOut();
+      } catch (e) { console.log('signout error', e); }
+      // force UI reset regardless
+      document.getElementById('appEl').style.display = 'none';
+      document.getElementById('badge').style.display = 'none';
+      document.getElementById('navEl').style.display = 'none';
       document.getElementById('logoutBtn').style.display = 'none';
-      show('authScreen');
+      document.getElementById('loadScreen').style.display = 'none';
+      document.getElementById('authScreen').style.display = 'block';
       document.getElementById('loginBtn').disabled = false;
+      document.getElementById('passInp').value = '';
+      document.getElementById('authErr').style.display = 'none';
+      uid = null; habits = [];
     }
 
     // ══════════════════════════════════════════════
