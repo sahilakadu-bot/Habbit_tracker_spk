@@ -272,8 +272,8 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db   = firebase.database();
 
-// 🔒 SESSION persistence — logged in while browser is open, clears when browser/tab is closed
-auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+// 🔒 NONE persistence — clears on every refresh
+auth.setPersistence(firebase.auth.Auth.Persistence.NONE);
 
 // ══════════════════════════════════════════════
 //  APP STATE
@@ -311,7 +311,7 @@ async function doLogin(){
   btn.textContent = 'Signing in…';
 
   try{
-    await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+    await auth.setPersistence(firebase.auth.Auth.Persistence.NONE);
     await auth.signInWithEmailAndPassword('sahilakadu@gmail.com', pass);
     // success — onAuthStateChanged will show the app
   } catch(e){
