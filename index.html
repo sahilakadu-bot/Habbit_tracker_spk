@@ -1,647 +1,1540 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sahil's Habit Tracker</title>
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-<style>
-  
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
-:root{--bg:#0d0f14;--sur:#141720;--s2:#1c2030;--bor:#252a3a;--acc:#6c63ff;--red:#ff6584;--gold:#f7c948;--grn:#43e97b;--txt:#e8eaf6;--mut:#6b7280}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
-/* HEADER */
-header{background:var(--sur);border-bottom:1px solid var(--bor);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;gap:8px;flex-wrap:wrap}
-.logo{font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:var(--acc)}.logo span{color:var(--txt)}
-.nav{display:flex;gap:2px;flex-wrap:wrap}
-.nt{padding:5px 11px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--mut);font-family:'Space Grotesk',sans-serif}
-.nt.active{background:var(--acc);color:#fff}.nt:hover:not(.active){background:var(--bor);color:var(--txt)}
-.badge{font-size:11px;font-family:'Space Mono',monospace;padding:3px 10px;border-radius:99px;border:1px solid var(--bor)}
-.badge.ok{color:var(--grn);border-color:var(--grn)}.badge.busy{color:var(--gold);border-color:var(--gold)}.badge.err{color:var(--red);border-color:var(--red)}
-main{max-width:1080px;margin:0 auto;padding:24px 16px}
-.view{display:none}.view.active{display:block}
-/* LOGIN */
-.ctr{min-height:calc(100vh - 56px);display:flex;align-items:center;justify-content:center;padding:20px}
-.box{max-width:400px;width:100%;background:var(--sur);border:1px solid var(--bor);border-radius:18px;padding:32px 28px;text-align:center}
-.box h1{font-size:22px;font-weight:700;margin-bottom:6px}
-.box p{color:var(--mut);font-size:13px;margin-bottom:24px;line-height:1.6}
-.lbl{text-align:left;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--mut);margin:12px 0 5px}
-.inp{background:var(--bg);border:1px solid var(--bor);color:var(--txt);border-radius:8px;padding:11px 14px;font-family:'Space Grotesk',sans-serif;font-size:14px;outline:none;width:100%;transition:border .2s}
-.inp:focus{border-color:var(--acc)}
-.mbtn{width:100%;padding:13px;border-radius:10px;border:none;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-top:16px;background:var(--acc);color:#fff;transition:opacity .2s}
-.mbtn:hover{opacity:.85}.mbtn:disabled{opacity:.5;cursor:not-allowed}
-.toggle{font-size:13px;color:var(--mut);margin-top:16px;cursor:pointer}
-.toggle span{color:var(--acc);font-weight:600}
-.errbox{background:rgba(255,101,132,.08);border:1px solid var(--red);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--red);margin-top:12px;display:none;text-align:left}
-.note{font-size:11px;color:var(--mut);margin-top:14px;line-height:1.6}
-/* LOADING */
-.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:14px;color:var(--mut)}
-.spinner{width:34px;height:34px;border:3px solid var(--bor);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-/* TODAY */
-.top2{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px;gap:16px}
-.ttl h1{font-size:24px;font-weight:700}.ttl p{color:var(--mut);font-size:13px;margin-top:5px}
-.ring{position:relative;width:76px;height:76px;flex-shrink:0}
-.ring svg{transform:rotate(-90deg)}
-.rlbl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:15px;font-weight:700}
-.rlbl small{font-size:9px;color:var(--mut)}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:520px){.g2{grid-template-columns:1fr}}
-.hc{background:var(--sur);border:1px solid var(--bor);border-radius:13px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
-.hc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--grn);opacity:0;transition:.2s}
-.hc.done{border-color:var(--grn);background:rgba(67,233,123,.06)}.hc.done::before{opacity:1}
-.hc:hover{border-color:var(--acc);transform:translateY(-1px)}
-.hchk{width:26px;height:26px;border-radius:50%;border:2px solid var(--bor);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
-.hc.done .hchk{background:var(--grn);border-color:var(--grn);color:#0d0f14}
-.hi{flex:1;min-width:0}.hn{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hs{font-size:11px;color:var(--gold);margin-top:2px}.he{font-size:20px;flex-shrink:0}
-.sh{display:flex;align-items:center;gap:10px;margin:28px 0 14px}
-.sh h2{font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--mut);white-space:nowrap}
-.sh .ln{flex:1;height:1px;background:var(--bor)}
-/* STATS */
-.s4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
-@media(max-width:580px){.s4{grid-template-columns:1fr 1fr}}
-.sc{background:var(--sur);border:1px solid var(--bor);border-radius:13px;padding:16px}
-.scl{font-size:10px;color:var(--mut);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
-.scv{font-family:'Space Mono',monospace;font-size:24px;font-weight:700}
-.scs{font-size:11px;color:var(--mut);margin-top:3px}
-.pr{background:var(--sur);border:1px solid var(--bor);border-radius:11px;padding:13px 16px;margin-bottom:8px}
-.prt{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
-.prn{font-size:13px;font-weight:500}.prr{display:flex;align-items:center;gap:10px}
-.prc{font-size:11px;color:var(--mut);font-family:'Space Mono',monospace}
-.prp{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;min-width:34px;text-align:right}
-.bt{height:5px;background:var(--bor);border-radius:99px;overflow:hidden}
-.bf{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--acc),var(--grn));transition:width .8s}
-/* CAL */
-.cn{display:flex;align-items:center;gap:12px;margin-bottom:20px}
-.cn h2{font-size:18px;font-weight:700;flex:1;text-align:center}
-.cb{background:var(--sur);border:1px solid var(--bor);color:var(--txt);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
-.cb:hover{background:var(--bor)}
-.cg{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:14px}
-.cdl{text-align:center;font-size:10px;font-weight:700;color:var(--mut);padding-bottom:4px;letter-spacing:1px}
-.cd{aspect-ratio:1;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .15s}
-.cd.e{cursor:default}.cd.hd{border-color:var(--bor);background:var(--sur)}
-.cd.today{border-color:var(--acc)!important}
-.cd:not(.e):hover{border-color:var(--acc);transform:scale(1.06)}
-.cd.sel{background:var(--acc);color:#fff;border-color:var(--acc)}
-.dot{width:5px;height:5px;border-radius:50%;margin-top:2px}
-.dg{background:var(--grn)}.dm{background:var(--gold)}.dl{background:var(--red)}
-.dp{background:var(--sur);border:1px solid var(--bor);border-radius:14px;padding:18px;margin-top:12px}
-.dp h3{font-size:14px;font-weight:700;margin-bottom:12px}
-/* HEATMAP */
-.hmw{overflow-x:auto;padding-bottom:6px}
-.hm{display:flex;gap:4px}
-.hmc{display:flex;flex-direction:column;gap:3px}
-.hml{font-size:9px;color:var(--mut);text-align:center;height:11px;font-family:'Space Mono',monospace}
-.hmx{width:13px;height:13px;border-radius:3px}
-.hm0{background:var(--bor)}.hm1{background:#1e3a2f}.hm2{background:#265c3f}.hm3{background:#2e8050}.hm4{background:#38a864}.hm5{background:var(--grn)}
-.hleg{display:flex;align-items:center;gap:5px;margin-top:8px;font-size:11px;color:var(--mut)}
-.hlegc{display:flex;gap:3px}.hlegc div{width:13px;height:13px;border-radius:3px}
-.ymg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-@media(max-width:560px){.ymg{grid-template-columns:1fr 1fr}}
-.ymc{background:var(--sur);border:1px solid var(--bor);border-radius:11px;padding:14px;cursor:pointer;transition:all .2s}
-.ymc:hover{border-color:var(--acc);transform:translateY(-2px)}
-.ymcn{font-size:10px;font-weight:700;color:var(--mut);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
-.ymcp{font-family:'Space Mono',monospace;font-size:21px;font-weight:700}
-.ymcb{height:4px;background:var(--bor);border-radius:99px;overflow:hidden;margin:5px 0 3px}
-.ymcf{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--acc),var(--grn))}
-.ymcs{font-size:10px;color:var(--mut)}
-/* MANAGE */
-.mr{background:var(--sur);border:1px solid var(--bor);border-radius:10px;padding:11px 15px;display:flex;align-items:center;gap:11px;margin-bottom:8px}
-.mre{font-size:18px}.mrn{flex:1;font-size:13px;font-weight:500}
-.db{background:transparent;border:1px solid var(--bor);color:var(--red);border-radius:7px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:'Space Grotesk',sans-serif}
-.db:hover{background:rgba(255,101,132,.1)}
-.af{background:var(--sur);border:1px solid var(--bor);border-radius:12px;padding:16px;display:flex;gap:10px;flex-wrap:wrap}
-.af input,.af select{background:var(--bg);border:1px solid var(--bor);color:var(--txt);border-radius:7px;padding:9px 12px;font-family:'Space Grotesk',sans-serif;font-size:13px;outline:none}
-.af input{flex:1;min-width:150px}.af input:focus,.af select:focus{border-color:var(--acc)}
-.ab{background:var(--acc);border:none;color:#fff;border-radius:7px;padding:9px 18px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
-.ab:hover{opacity:.85}
-.actb{background:var(--s2);border:1px solid var(--bor);color:var(--txt);border-radius:8px;padding:8px 14px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;margin-right:8px;margin-bottom:8px}
-.actb:hover{border-color:var(--acc);color:var(--acc)}.actb.d{color:var(--red)}.actb.d:hover{border-color:var(--red)}
-.ib{background:var(--s2);border:1px solid var(--bor);border-radius:11px;padding:16px;margin-bottom:20px;font-size:13px;line-height:1.8}
-/* TOAST */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--grn);color:#0d0f14;font-weight:700;font-size:13px;padding:10px 22px;border-radius:99px;transition:transform .3s;z-index:999;pointer-events:none}
-.toast.show{transform:translateX(-50%) translateY(0)}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sahil's Habit Tracker</title>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+    :root {
+      --bg: #0d0f14;
+      --sur: #141720;
+      --s2: #1c2030;
+      --bor: #252a3a;
+      --acc: #6c63ff;
+      --red: #ff6584;
+      --gold: #f7c948;
+      --grn: #43e97b;
+      --txt: #e8eaf6;
+      --mut: #6b7280
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--txt);
+      min-height: 100vh
+    }
+
+    /* HEADER */
+    header {
+      background: var(--sur);
+      border-bottom: 1px solid var(--bor);
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      gap: 8px;
+      flex-wrap: wrap
+    }
+
+    .logo {
+      font-family: 'Space Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--acc)
+    }
+
+    .logo span {
+      color: var(--txt)
+    }
+
+    .nav {
+      display: flex;
+      gap: 2px;
+      flex-wrap: wrap
+    }
+
+    .nt {
+      padding: 5px 11px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--mut);
+      font-family: 'Space Grotesk', sans-serif
+    }
+
+    .nt.active {
+      background: var(--acc);
+      color: #fff
+    }
+
+    .nt:hover:not(.active) {
+      background: var(--bor);
+      color: var(--txt)
+    }
+
+    .badge {
+      font-size: 11px;
+      font-family: 'Space Mono', monospace;
+      padding: 3px 10px;
+      border-radius: 99px;
+      border: 1px solid var(--bor)
+    }
+
+    .badge.ok {
+      color: var(--grn);
+      border-color: var(--grn)
+    }
+
+    .badge.busy {
+      color: var(--gold);
+      border-color: var(--gold)
+    }
+
+    .badge.err {
+      color: var(--red);
+      border-color: var(--red)
+    }
+
+    main {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 24px 16px
+    }
+
+    .view {
+      display: none
+    }
+
+    .view.active {
+      display: block
+    }
+
+    /* LOGIN */
+    .ctr {
+      min-height: calc(100vh - 56px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px
+    }
+
+    .box {
+      max-width: 400px;
+      width: 100%;
+      background: var(--sur);
+      border: 1px solid var(--bor);
+      border-radius: 18px;
+      padding: 32px 28px;
+      text-align: center
+    }
+
+    .box h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 6px
+    }
+
+    .box p {
+      color: var(--mut);
+      font-size: 13px;
+      margin-bottom: 24px;
+      line-height: 1.6
+    }
+
+    .lbl {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--mut);
+      margin: 12px 0 5px
+    }
+
+    .inp {
+      background: var(--bg);
+      border: 1px solid var(--bor);
+      color: var(--txt);
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px;
+      outline: none;
+      width: 100%;
+      transition: border .2s
+    }
+
+    .inp:focus {
+      border-color: var(--acc)
+    }
+
+    .mbtn {
+      width: 100%;
+      padding: 13px;
+      border-radius: 10px;
+      border: none;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 16px;
+      background: var(--acc);
+      color: #fff;
+      transition: opacity .2s
+    }
+
+    .mbtn:hover {
+      opacity: .85
+    }
+
+    .mbtn:disabled {
+      opacity: .5;
+      cursor: not-allowed
+    }
+
+    .toggle {
+      font-size: 13px;
+      color: var(--mut);
+      margin-top: 16px;
+      cursor: pointer
+    }
+
+    .toggle span {
+      color: var(--acc);
+      font-weight: 600
+    }
+
+    .errbox {
+      background: rgba(255, 101, 132, .08);
+      border: 1px solid var(--red);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--red);
+      margin-top: 12px;
+      display: none;
+      text-align: left
+    }
+
+    .note {
+      font-size: 11px;
+      color: var(--mut);
+      margin-top: 14px;
+      line-height: 1.6
+    }
+
+    /* LOADING */
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      gap: 14px;
+      color: var(--mut)
+    }
+
+    .spinner {
+      width: 34px;
+      height: 34px;
+      border: 3px solid var(--bor);
+      border-top-color: var(--acc);
+      border-radius: 50%;
+      animation: spin .7s linear infinite
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    /* TODAY */
+    .top2 {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 24px;
+      gap: 16px
+    }
+
+    .ttl h1 {
+      font-size: 24px;
+      font-weight: 700
+    }
+
+    .ttl p {
+      color: var(--mut);
+      font-size: 13px;
+      margin-top: 5px
+    }
+
+    .ring {
+      position: relative;
+      width: 76px;
+      height: 76px;
+      flex-shrink: 0
+    }
+
+    .ring svg {
+      transform: rotate(-90deg)
+    }
+
+    .rlbl {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 15px;
+      font-weight: 700
+    }
+
+    .rlbl small {
+      font-size: 9px;
+      color: var(--mut)
+    }
+
+    .g2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px
+    }
+
+    @media(max-width:520px) {
+      .g2 {
+        grid-template-columns: 1fr
+      }
+    }
+
+    .hc {
+      background: var(--sur);
+      border: 1px solid var(--bor);
+      border-radius: 13px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all .18s;
+      position: relative;
+      overflow: hidden
+    }
+
+    .hc::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--grn);
+      opacity: 0;
+      transition: .2s
+    }
+
+    .hc.done {
+      border-color: var(--grn);
+      background: rgba(67, 233, 123, .06)
+    }
+
+    .hc.done::before {
+      opacity: 1
+    }
+
+    .hc:hover {
+      border-color: var(--acc);
+      transform: translateY(-1px)
+    }
+
+    .hchk {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 2px solid var(--bor);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0
+    }
+
+    .hc.done .hchk {
+      background: var(--grn);
+      border-color: var(--grn);
+      color: #0d0f14
+    }
+
+    .hi {
+      flex: 1;
+      min-width: 0
+    }
+
+    .hn {
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .hs {
+      font-size: 11px;
+      color: var(--gold);
+      margin-top: 2px
+    }
+
+    .he {
+      font-size: 20px;
+      flex-shrink: 0
+    }
+
+    .sh {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 28px 0 14px
+    }
+
+    .sh h2 {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      color: var(--mut);
+      white-space: nowrap
+    }
+
+    .sh .ln {
+      flex: 1;
+      height: 1px;
+      background: var(--bor)
+    }
+
+    /* STATS */
+    .s4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px
+    }
+
+    @media(max-width:580px) {
+      .s4 {
+        grid-template-columns: 1fr 1fr
+      }
+    }
+
+    .sc {
+      background: var(--sur);
+      border: 1px solid var(--bor);
+      border-radius: 13px;
+      padding: 16px
+    }
+
+    .scl {
+      font-size: 10px;
+      color: var(--mut);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 5px
+    }
+
+    .scv {
+      font-family: 'Space Mono', monospace;
+      font-size: 24px;
+      font-weight: 700
+    }
+
+    .scs {
+      font-size: 11px;
+      color: var(--mut);
+      margin-top: 3px
+    }
+
+    .pr {
+      background: var(--sur);
+      border: 1px solid var(--bor);
+      border-radius: 11px;
+      padding: 13px 16px;
+      margin-bottom: 8px
+    }
+
+    .prt {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 7px
+    }
+
+    .prn {
+      font-size: 13px;
+      font-weight: 500
+    }
+
+    .prr {
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .prc {
+      font-size: 11px;
+      color: var(--mut);
+      font-family: 'Space Mono', monospace
+    }
+
+    .prp {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      min-width: 34px;
+      text-align: right
+    }
+
+    .bt {
+      height: 5px;
+      background: var(--bor);
+      border-radius: 99px;
+      overflow: hidden
+    }
+
+    .bf {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--acc), var(--grn));
+      transition: width .8s
+    }
+
+    /* CAL */
+    .cn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px
+    }
+
+    .cn h2 {
+      font-size: 18px;
+      font-weight: 700;
+      flex: 1;
+      text-align: center
+    }
+
+    .cb {
+      background: var(--sur);
+      border: 1px solid var(--bor);
+      color: var(--txt);
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .cb:hover {
+      background: var(--bor)
+    }
+
+    .cg {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      margin-bottom: 14px
+    }
+
+    .cdl {
+      text-align: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--mut);
+      padding-bottom: 4px;
+      letter-spacing: 1px
+    }
+
+    .cd {
+      aspect-ratio: 1;
+      border-radius: 9px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all .15s
+    }
+
+    .cd.e {
+      cursor: default
+    }
+
+    .cd.hd {
+      border-color: var(--bor);
+      background: var(--sur)
+    }
+
+    .cd.today {
+      border-color: var(--acc) !important
+    }
+
+    .cd:not(.e):hover {
+      border-color: var(--acc);
+      transform: scale(1.06)
+    }
+
+    .cd.sel {
+      background: var(--acc);
+      color: #fff;
+      border-color: var(--acc)
+    }
+
+    .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      margin-top: 2px
+    }
+
+    .dg {
+      background: var(--grn)
+    }
+
+    .dm {
+      background: var(--gold)
+    }
+
+    .dl {
+      background: var(--red)
+    }
+
+    .dp {
+      background: var(--sur);
+      border: 1px solid var(--bor);
+      border-radius: 14px;
+      padding: 18px;
+      margin-top: 12px
+    }
+
+    .dp h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 12px
+    }
+
+    /* HEATMAP */
+    .hmw {
+      overflow-x: auto;
+      padding-bottom: 6px
+    }
+
+    .hm {
+      display: flex;
+      gap: 4px
+    }
+
+    .hmc {
+      display: flex;
+      flex-direction: column;
+      gap: 3px
+    }
+
+    .hml {
+      font-size: 9px;
+      color: var(--mut);
+      text-align: center;
+      height: 11px;
+      font-family: 'Space Mono', monospace
+    }
+
+    .hmx {
+      width: 13px;
+      height: 13px;
+      border-radius: 3px
+    }
+
+    .hm0 {
+      background: var(--bor)
+    }
+
+    .hm1 {
+      background: #1e3a2f
+    }
+
+    .hm2 {
+      background: #265c3f
+    }
+
+    .hm3 {
+      background: #2e8050
+    }
+
+    .hm4 {
+      background: #38a864
+    }
+
+    .hm5 {
+      background: var(--grn)
+    }
+
+    .hleg {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--mut)
+    }
+
+    .hlegc {
+      display: flex;
+      gap: 3px
+    }
+
+    .hlegc div {
+      width: 13px;
+      height: 13px;
+      border-radius: 3px
+    }
+
+    .ymg {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px
+    }
+
+    @media(max-width:560px) {
+      .ymg {
+        grid-template-columns: 1fr 1fr
+      }
+    }
+
+    .ymc {
+      background: var(--sur);
+      border: 1px solid var(--bor);
+      border-radius: 11px;
+      padding: 14px;
+      cursor: pointer;
+      transition: all .2s
+    }
+
+    .ymc:hover {
+      border-color: var(--acc);
+      transform: translateY(-2px)
+    }
+
+    .ymcn {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--mut);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 5px
+    }
+
+    .ymcp {
+      font-family: 'Space Mono', monospace;
+      font-size: 21px;
+      font-weight: 700
+    }
+
+    .ymcb {
+      height: 4px;
+      background: var(--bor);
+      border-radius: 99px;
+      overflow: hidden;
+      margin: 5px 0 3px
+    }
+
+    .ymcf {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--acc), var(--grn))
+    }
+
+    .ymcs {
+      font-size: 10px;
+      color: var(--mut)
+    }
+
+    /* MANAGE */
+    .mr {
+      background: var(--sur);
+      border: 1px solid var(--bor);
+      border-radius: 10px;
+      padding: 11px 15px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin-bottom: 8px
+    }
+
+    .mre {
+      font-size: 18px
+    }
+
+    .mrn {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 500
+    }
+
+    .db {
+      background: transparent;
+      border: 1px solid var(--bor);
+      color: var(--red);
+      border-radius: 7px;
+      padding: 4px 10px;
+      font-size: 11px;
+      cursor: pointer;
+      font-family: 'Space Grotesk', sans-serif
+    }
+
+    .db:hover {
+      background: rgba(255, 101, 132, .1)
+    }
+
+    .af {
+      background: var(--sur);
+      border: 1px solid var(--bor);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap
+    }
+
+    .af input,
+    .af select {
+      background: var(--bg);
+      border: 1px solid var(--bor);
+      color: var(--txt);
+      border-radius: 7px;
+      padding: 9px 12px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      outline: none
+    }
+
+    .af input {
+      flex: 1;
+      min-width: 150px
+    }
+
+    .af input:focus,
+    .af select:focus {
+      border-color: var(--acc)
+    }
+
+    .ab {
+      background: var(--acc);
+      border: none;
+      color: #fff;
+      border-radius: 7px;
+      padding: 9px 18px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer
+    }
+
+    .ab:hover {
+      opacity: .85
+    }
+
+    .actb {
+      background: var(--s2);
+      border: 1px solid var(--bor);
+      color: var(--txt);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+      margin-right: 8px;
+      margin-bottom: 8px
+    }
+
+    .actb:hover {
+      border-color: var(--acc);
+      color: var(--acc)
+    }
+
+    .actb.d {
+      color: var(--red)
+    }
+
+    .actb.d:hover {
+      border-color: var(--red)
+    }
+
+    .ib {
+      background: var(--s2);
+      border: 1px solid var(--bor);
+      border-radius: 11px;
+      padding: 16px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      line-height: 1.8
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--grn);
+      color: #0d0f14;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 10px 22px;
+      border-radius: 99px;
+      transition: transform .3s;
+      z-index: 999;
+      pointer-events: none
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0)
+    }
+  </style>
 </head>
+
 <body>
 
-<header>
-  <div class="logo">sahil<span>.habits</span></div>
-  <div class="nav" id="navEl" style="display:none">
-    <button class="nt active" data-v="today"    onclick="sw('today',this)">Today</button>
-    <button class="nt"        data-v="monthly"  onclick="sw('monthly',this)">Monthly</button>
-    <button class="nt"        data-v="yearly"   onclick="sw('yearly',this)">Yearly</button>
-    <button class="nt"        data-v="calendar" onclick="sw('calendar',this)">Calendar</button>
-    <button class="nt"        data-v="manage"   onclick="sw('manage',this)">Manage</button>
-  </div>
-  <div class="badge ok" id="badge" style="display:none">✓ live</div>
-</header>
+  <header>
+    <div class="logo">sahil<span>.habits</span></div>
+    <div class="nav" id="navEl" style="display:none">
+      <button class="nt active" data-v="today" onclick="sw('today',this)">Today</button>
+      <button class="nt" data-v="monthly" onclick="sw('monthly',this)">Monthly</button>
+      <button class="nt" data-v="yearly" onclick="sw('yearly',this)">Yearly</button>
+      <button class="nt" data-v="calendar" onclick="sw('calendar',this)">Calendar</button>
+      <button class="nt" data-v="manage" onclick="sw('manage',this)">Manage</button>
+    </div>
+    <div class="badge ok" id="badge" style="display:none">✓ live</div>
+  </header>
 
-<main>
+  <main>
 
-<!-- LOGIN / REGISTER -->
-<div id="authScreen">
-<div class="ctr"><div class="box">
-  <div style="font-size:44px;margin-bottom:10px">🎯</div>
-  <h1>Sahil's Habit Tracker</h1>
-  <p>Sign in with your email — your data syncs instantly across every device.</p>
+    <!-- LOGIN / REGISTER -->
+    <div id="authScreen">
+      <div class="ctr">
+        <div class="box">
+          <div style="font-size:44px;margin-bottom:10px">🎯</div>
+          <h1>Sahil's Habit Tracker</h1>
+          <p>Sign in with your email — your data syncs instantly across every device.</p>
 
-  <div class="lbl">Email</div>
-  <input class="inp" type="email" id="emailInp" placeholder="you@gmail.com" value="sahilakadu26@gmail.com"/>
+          <div class="lbl">Email</div>
+          <input class="inp" type="email" id="emailInp" placeholder="you@gmail.com" value="sahilakadu26@gmail.com" />
 
-  <div class="lbl">Password</div>
-  <input class="inp" type="password" id="passInp" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"/>
+          <div class="lbl">Password</div>
+          <input class="inp" type="password" id="passInp" placeholder="Your password"
+            onkeydown="if(event.key==='Enter')doLogin()" />
 
-  <button class="mbtn" id="loginBtn" onclick="doLogin()">Sign In →</button>
-  <div class="errbox" id="authErr"></div>
+          <button class="mbtn" id="loginBtn" onclick="doLogin()">Sign In →</button>
+          <div class="errbox" id="authErr"></div>
 
-  <div class="toggle" onclick="toggleMode()">
-    No account? <span id="toggleTxt">Create one</span>
-  </div>
-  <div class="note">🔒 Your data is private — only you can see it.</div>
-</div></div>
-</div>
-
-<!-- LOADING -->
-<div id="loadScreen" style="display:none">
-  <div class="loading"><div class="spinner"></div><span id="loadMsg">Signing in…</span></div>
-</div>
-
-<!-- APP -->
-<div id="appEl" style="display:none">
-
-  <!-- TODAY -->
-  <div class="view active" id="view-today">
-    <div class="top2">
-      <div class="ttl"><h1 id="greeting">Hey Sahil 👋</h1><p id="todaySub"></p></div>
-      <div class="ring">
-        <svg width="76" height="76" viewBox="0 0 76 76">
-          <circle cx="38" cy="38" r="32" fill="none" stroke="#252a3a" stroke-width="7"/>
-          <circle cx="38" cy="38" r="32" fill="none" stroke="url(#rg)" stroke-width="7" stroke-linecap="round" stroke-dasharray="201" id="ringArc" stroke-dashoffset="201"/>
-          <defs><linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#6c63ff"/><stop offset="100%" stop-color="#43e97b"/></linearGradient></defs>
-        </svg>
-        <div class="rlbl"><span id="ringPct">0%</span><small>done</small></div>
+          <div class="toggle" onclick="toggleMode()">
+            No account? <span id="toggleTxt">Create one</span>
+          </div>
+          <div class="note">🔒 Your data is private — only you can see it.</div>
+        </div>
       </div>
     </div>
-    <div class="sh"><div class="ln"></div><h2>Daily Habits</h2><div class="ln"></div></div>
-    <div class="g2" id="habitsGrid"></div>
-  </div>
 
-  <!-- MONTHLY -->
-  <div class="view" id="view-monthly">
-    <div class="cn"><button class="cb" onclick="mnav(-1)">‹</button><h2 id="mLbl"></h2><button class="cb" onclick="mnav(1)">›</button></div>
-    <div class="s4" id="mStats"></div>
-    <div class="sh"><div class="ln"></div><h2>Habit Completion</h2><div class="ln"></div></div>
-    <div id="mHabits"></div>
-    <div class="sh"><div class="ln"></div><h2>Day-by-Day</h2><div class="ln"></div></div>
-    <div class="cg" id="mCal"></div><div id="mDay"></div>
-  </div>
-
-  <!-- YEARLY -->
-  <div class="view" id="view-yearly">
-    <div class="cn"><button class="cb" onclick="ynav(-1)">‹</button><h2 id="yLbl"></h2><button class="cb" onclick="ynav(1)">›</button></div>
-    <div class="s4" id="yStats"></div>
-    <div class="sh"><div class="ln"></div><h2>Activity Heatmap</h2><div class="ln"></div></div>
-    <div class="hmw"><div class="hm" id="hmEl"></div></div>
-    <div class="hleg">Less <div class="hlegc"><div class="hm0"></div><div class="hm1"></div><div class="hm2"></div><div class="hm3"></div><div class="hm4"></div><div class="hm5"></div></div> More</div>
-    <div class="sh"><div class="ln"></div><h2>Month by Month</h2><div class="ln"></div></div>
-    <div class="ymg" id="ymEl"></div>
-    <div class="sh"><div class="ln"></div><h2>Best Habits</h2><div class="ln"></div></div>
-    <div id="yHabits"></div>
-  </div>
-
-  <!-- CALENDAR -->
-  <div class="view" id="view-calendar">
-    <div class="cn"><button class="cb" onclick="calnav(-1)">‹</button><h2 id="calLbl"></h2><button class="cb" onclick="calnav(1)">›</button></div>
-    <div class="cg" id="calGrid"></div><div id="calDay"></div>
-  </div>
-
-  <!-- MANAGE -->
-  <div class="view" id="view-manage">
-    <div class="sh" style="margin-top:0"><div class="ln"></div><h2>Account</h2><div class="ln"></div></div>
-    <div class="ib">
-      ✅ Signed in as <strong id="userEmailDisplay" style="color:var(--acc)">—</strong><br>
-      <span style="color:var(--mut);font-size:12px">Data syncs live across all devices. Just sign in with the same email anywhere.</span>
+    <!-- LOADING -->
+    <div id="loadScreen" style="display:none">
+      <div class="loading">
+        <div class="spinner"></div><span id="loadMsg">Signing in…</span>
+      </div>
     </div>
-    <div style="margin-bottom:24px">
-      <button class="actb" onclick="signOut()">Sign Out</button>
-      <button class="actb" onclick="exportJSON()">⬇ Export Backup</button>
-    </div>
-    <div class="sh"><div class="ln"></div><h2>Your Habits</h2><div class="ln"></div></div>
-    <div id="manageList"></div>
-    <div class="sh"><div class="ln"></div><h2>Add New Habit</h2><div class="ln"></div></div>
-    <div class="af">
-      <select id="newEmoji"><option>📖</option><option>🕌</option><option>📚</option><option>🧹</option><option>📈</option><option>🧘</option><option>🏋️</option><option>😴</option><option>😤</option><option>💼</option><option>💊</option><option>💇</option><option>🚶</option><option>💧</option><option>✍️</option><option>🎯</option><option>🌱</option><option>🔥</option><option>🎵</option><option>🍎</option></select>
-      <input type="text" id="newName" placeholder="New habit name..." maxlength="50" onkeydown="if(event.key==='Enter')addHabit()"/>
-      <button class="ab" onclick="addHabit()">Add</button>
-    </div>
-  </div>
 
-</div><!-- /app -->
-</main>
-<div class="toast" id="toast"></div>
+    <!-- APP -->
+    <div id="appEl" style="display:none">
 
-<script>
-  import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// ══════════════════════════════════════════════
-//  FIREBASE CONFIG
-//  → You MUST replace these with your own values
-//  → Takes 3 minutes: console.firebase.google.com
-// ══════════════════════════════════════════════
- const firebaseConfig = {
-    apiKey: "AIzaSyD12gNkhwMVvzCRJNEaTkyBywuwOX-rmdg",
-    authDomain: "habit-tracker-1a175.firebaseapp.com",
-    databaseURL: "https://habit-tracker-1a175-default-rtdb.firebaseio.com",
-    projectId: "habit-tracker-1a175",
-    storageBucket: "habit-tracker-1a175.firebasestorage.app",
-    messagingSenderId: "573268353810",
-    appId: "1:573268353810:web:0b2171c9aa320c329009cb",
-    measurementId: "G-TKRYPR1GJM"
-  };
+      <!-- TODAY -->
+      <div class="view active" id="view-today">
+        <div class="top2">
+          <div class="ttl">
+            <h1 id="greeting">Hey Sahil 👋</h1>
+            <p id="todaySub"></p>
+          </div>
+          <div class="ring">
+            <svg width="76" height="76" viewBox="0 0 76 76">
+              <circle cx="38" cy="38" r="32" fill="none" stroke="#252a3a" stroke-width="7" />
+              <circle cx="38" cy="38" r="32" fill="none" stroke="url(#rg)" stroke-width="7" stroke-linecap="round"
+                stroke-dasharray="201" id="ringArc" stroke-dashoffset="201" />
+              <defs>
+                <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#6c63ff" />
+                  <stop offset="100%" stop-color="#43e97b" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="rlbl"><span id="ringPct">0%</span><small>done</small></div>
+          </div>
+        </div>
+        <div class="sh">
+          <div class="ln"></div>
+          <h2>Daily Habits</h2>
+          <div class="ln"></div>
+        </div>
+        <div class="g2" id="habitsGrid"></div>
+      </div>
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
+      <!-- MONTHLY -->
+      <div class="view" id="view-monthly">
+        <div class="cn"><button class="cb" onclick="mnav(-1)">‹</button>
+          <h2 id="mLbl"></h2><button class="cb" onclick="mnav(1)">›</button>
+        </div>
+        <div class="s4" id="mStats"></div>
+        <div class="sh">
+          <div class="ln"></div>
+          <h2>Habit Completion</h2>
+          <div class="ln"></div>
+        </div>
+        <div id="mHabits"></div>
+        <div class="sh">
+          <div class="ln"></div>
+          <h2>Day-by-Day</h2>
+          <div class="ln"></div>
+        </div>
+        <div class="cg" id="mCal"></div>
+        <div id="mDay"></div>
+      </div>
 
-// ══════════════════════════════════════════════
-//  APP STATE
-// ══════════════════════════════════════════════
-const NOW     = new Date();
-const MONTHS  = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-const MS      = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const DEF_HABITS = [
-  {id:'h1',name:'Reading',emoji:'📖'},{id:'h2',name:'Go to mandir',emoji:'🕌'},
-  {id:'h3',name:'English study / self-improvement',emoji:'📚'},{id:'h4',name:'Keep it clean',emoji:'🧹'},
-  {id:'h5',name:'Trading study',emoji:'📈'},{id:'h6',name:'Short meditation',emoji:'🧘'},
-  {id:'h7',name:'Gym',emoji:'🏋️'},{id:'h8',name:'Sleep on time',emoji:'😴'},
-  {id:'h9',name:'Control anger',emoji:'😤'},{id:'h10',name:'Interview study',emoji:'💼'},
-  {id:'h11',name:'Morning hair serum',emoji:'💇'},{id:'h12',name:'Night hair serum',emoji:'💇'},
-  {id:'h13',name:'Afternoon medicine',emoji:'💊'},
-];
+      <!-- YEARLY -->
+      <div class="view" id="view-yearly">
+        <div class="cn"><button class="cb" onclick="ynav(-1)">‹</button>
+          <h2 id="yLbl"></h2><button class="cb" onclick="ynav(1)">›</button>
+        </div>
+        <div class="s4" id="yStats"></div>
+        <div class="sh">
+          <div class="ln"></div>
+          <h2>Activity Heatmap</h2>
+          <div class="ln"></div>
+        </div>
+        <div class="hmw">
+          <div class="hm" id="hmEl"></div>
+        </div>
+        <div class="hleg">Less <div class="hlegc">
+            <div class="hm0"></div>
+            <div class="hm1"></div>
+            <div class="hm2"></div>
+            <div class="hm3"></div>
+            <div class="hm4"></div>
+            <div class="hm5"></div>
+          </div> More</div>
+        <div class="sh">
+          <div class="ln"></div>
+          <h2>Month by Month</h2>
+          <div class="ln"></div>
+        </div>
+        <div class="ymg" id="ymEl"></div>
+        <div class="sh">
+          <div class="ln"></div>
+          <h2>Best Habits</h2>
+          <div class="ln"></div>
+        </div>
+        <div id="yHabits"></div>
+      </div>
 
-let uid = null;
-let habits = [];
-let isRegister = false;
-let unsubHabits = null, unsubLog = null;
+      <!-- CALENDAR -->
+      <div class="view" id="view-calendar">
+        <div class="cn"><button class="cb" onclick="calnav(-1)">‹</button>
+          <h2 id="calLbl"></h2><button class="cb" onclick="calnav(1)">›</button>
+        </div>
+        <div class="cg" id="calGrid"></div>
+        <div id="calDay"></div>
+      </div>
 
-// ══════════════════════════════════════════════
-//  AUTH
-// ══════════════════════════════════════════════
-function toggleMode(){
-  isRegister = !isRegister;
-  document.getElementById('loginBtn').textContent = isRegister ? 'Create Account →' : 'Sign In →';
-  document.getElementById('toggleTxt').textContent = isRegister ? 'Sign in instead' : 'Create one';
-  document.getElementById('authErr').style.display = 'none';
-}
+      <!-- MANAGE -->
+      <div class="view" id="view-manage">
+        <div class="sh" style="margin-top:0">
+          <div class="ln"></div>
+          <h2>Account</h2>
+          <div class="ln"></div>
+        </div>
+        <div class="ib">
+          ✅ Signed in as <strong id="userEmailDisplay" style="color:var(--acc)">—</strong><br>
+          <span style="color:var(--mut);font-size:12px">Data syncs live across all devices. Just sign in with the same
+            email anywhere.</span>
+        </div>
+        <div style="margin-bottom:24px">
+          <button class="actb" onclick="signOut()">Sign Out</button>
+          <button class="actb" onclick="exportJSON()">⬇ Export Backup</button>
+        </div>
+        <div class="sh">
+          <div class="ln"></div>
+          <h2>Your Habits</h2>
+          <div class="ln"></div>
+        </div>
+        <div id="manageList"></div>
+        <div class="sh">
+          <div class="ln"></div>
+          <h2>Add New Habit</h2>
+          <div class="ln"></div>
+        </div>
+        <div class="af">
+          <select id="newEmoji">
+            <option>📖</option>
+            <option>🕌</option>
+            <option>📚</option>
+            <option>🧹</option>
+            <option>📈</option>
+            <option>🧘</option>
+            <option>🏋️</option>
+            <option>😴</option>
+            <option>😤</option>
+            <option>💼</option>
+            <option>💊</option>
+            <option>💇</option>
+            <option>🚶</option>
+            <option>💧</option>
+            <option>✍️</option>
+            <option>🎯</option>
+            <option>🌱</option>
+            <option>🔥</option>
+            <option>🎵</option>
+            <option>🍎</option>
+          </select>
+          <input type="text" id="newName" placeholder="New habit name..." maxlength="50"
+            onkeydown="if(event.key==='Enter')addHabit()" />
+          <button class="ab" onclick="addHabit()">Add</button>
+        </div>
+      </div>
 
-async function doLogin(){
-  const email = document.getElementById('emailInp').value.trim();
-  const pass  = document.getElementById('passInp').value;
-  const errEl = document.getElementById('authErr');
-  const btn   = document.getElementById('loginBtn');
-  errEl.style.display = 'none';
-  if(!email||!pass){showAuthErr('Please enter email and password.');return;}
-  btn.disabled = true;
-  try{
-    if(isRegister){
-      await auth.createUserWithEmailAndPassword(email, pass);
-    } else {
-      await auth.signInWithEmailAndPassword(email, pass);
-    }
-  } catch(e){
-    btn.disabled = false;
-    const msgs = {
-      'auth/user-not-found':'No account found. Click "Create one" to register.',
-      'auth/wrong-password':'Wrong password. Please try again.',
-      'auth/invalid-email':'Please enter a valid email address.',
-      'auth/email-already-in-use':'Account already exists. Click "Sign in instead".',
-      'auth/weak-password':'Password must be at least 6 characters.',
-      'auth/too-many-requests':'Too many attempts. Please wait a moment.',
-      'auth/invalid-credential':'Wrong email or password. Please try again.',
+    </div><!-- /app -->
+  </main>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    import { initializeApp } from "firebase/app";
+    import { getAnalytics } from "firebase/analytics";
+    // ══════════════════════════════════════════════
+    //  FIREBASE CONFIG
+    //  → You MUST replace these with your own values
+    //  → Takes 3 minutes: console.firebase.google.com
+    // ══════════════════════════════════════════════
+    const firebaseConfig = {
+      apiKey: "AIzaSyD12gNkhwMVvzCRJNEaTkyBywuwOX-rmdg",
+      authDomain: "habit-tracker-1a175.firebaseapp.com",
+      databaseURL: "https://habit-tracker-1a175-default-rtdb.firebaseio.com",
+      projectId: "habit-tracker-1a175",
+      storageBucket: "habit-tracker-1a175.firebasestorage.app",
+      messagingSenderId: "573268353810",
+      appId: "1:573268353810:web:0b2171c9aa320c329009cb",
+      measurementId: "G-TKRYPR1GJM"
     };
-    showAuthErr(msgs[e.code] || e.message);
-  }
-}
 
-function showAuthErr(msg){
-  const e = document.getElementById('authErr');
-  e.textContent = msg; e.style.display = 'block';
-}
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
 
-async function signOut(){
-  if(unsubHabits) unsubHabits();
-  if(unsubLog) unsubLog();
-  await auth.signOut();
-  hide('appEl'); hide('badge'); hide('navEl');
-  show('authScreen');
-  document.getElementById('loginBtn').disabled = false;
-}
+    // ══════════════════════════════════════════════
+    //  APP STATE
+    // ══════════════════════════════════════════════
+    const NOW = new Date();
+    const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const MS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const DEF_HABITS = [
+      { id: 'h1', name: 'Reading', emoji: '📖' }, { id: 'h2', name: 'Go to mandir', emoji: '🕌' },
+      { id: 'h3', name: 'English study / self-improvement', emoji: '📚' }, { id: 'h4', name: 'Keep it clean', emoji: '🧹' },
+      { id: 'h5', name: 'Trading study', emoji: '📈' }, { id: 'h6', name: 'Short meditation', emoji: '🧘' },
+      { id: 'h7', name: 'Gym', emoji: '🏋️' }, { id: 'h8', name: 'Sleep on time', emoji: '😴' },
+      { id: 'h9', name: 'Control anger', emoji: '😤' }, { id: 'h10', name: 'Interview study', emoji: '💼' },
+      { id: 'h11', name: 'Morning hair serum', emoji: '💇' }, { id: 'h12', name: 'Night hair serum', emoji: '💇' },
+      { id: 'h13', name: 'Afternoon medicine', emoji: '💊' },
+    ];
 
-// ══════════════════════════════════════════════
-//  FIREBASE REALTIME DB — LIVE SYNC
-// ══════════════════════════════════════════════
-function userRef(path){ return db.ref(`users/${uid}/${path}`); }
+    let uid = null;
+    let habits = [];
+    let isRegister = false;
+    let unsubHabits = null, unsubLog = null;
 
-function listenHabits(){
-  unsubHabits = userRef('habits').on('value', snap => {
-    const val = snap.val();
-    if(val){
-      habits = Object.values(val).sort((a,b)=>(a.order||0)-(b.order||0));
-    } else {
-      // first time — write defaults
-      const obj = {};
-      DEF_HABITS.forEach((h,i)=>{ obj[h.id]={...h,order:i}; });
-      userRef('habits').set(obj);
-      habits = DEF_HABITS;
+    // ══════════════════════════════════════════════
+    //  AUTH
+    // ══════════════════════════════════════════════
+    function toggleMode() {
+      isRegister = !isRegister;
+      document.getElementById('loginBtn').textContent = isRegister ? 'Create Account →' : 'Sign In →';
+      document.getElementById('toggleTxt').textContent = isRegister ? 'Sign in instead' : 'Create one';
+      document.getElementById('authErr').style.display = 'none';
     }
-    renderToday();
-    if(document.getElementById('view-manage').classList.contains('active')) renderManage();
-  });
-}
 
-function listenLog(){
-  // listen to current year's log for live updates
-  unsubLog = userRef(`log/${NOW.getFullYear()}`).on('value', ()=>{
-    renderToday();
-  });
-}
+    async function doLogin() {
+      const email = document.getElementById('emailInp').value.trim();
+      const pass = document.getElementById('passInp').value;
+      const errEl = document.getElementById('authErr');
+      const btn = document.getElementById('loginBtn');
+      errEl.style.display = 'none';
+      if (!email || !pass) { showAuthErr('Please enter email and password.'); return; }
+      btn.disabled = true;
+      try {
+        if (isRegister) {
+          await auth.createUserWithEmailAndPassword(email, pass);
+        } else {
+          await auth.signInWithEmailAndPassword(email, pass);
+        }
+      } catch (e) {
+        btn.disabled = false;
+        const msgs = {
+          'auth/user-not-found': 'No account found. Click "Create one" to register.',
+          'auth/wrong-password': 'Wrong password. Please try again.',
+          'auth/invalid-email': 'Please enter a valid email address.',
+          'auth/email-already-in-use': 'Account already exists. Click "Sign in instead".',
+          'auth/weak-password': 'Password must be at least 6 characters.',
+          'auth/too-many-requests': 'Too many attempts. Please wait a moment.',
+          'auth/invalid-credential': 'Wrong email or password. Please try again.',
+        };
+        showAuthErr(msgs[e.code] || e.message);
+      }
+    }
 
-async function getLog(year){
-  const snap = await userRef(`log/${year}`).get();
-  return snap.val() || {};
-}
+    function showAuthErr(msg) {
+      const e = document.getElementById('authErr');
+      e.textContent = msg; e.style.display = 'block';
+    }
 
-async function toggleHabit(id){
-  const k = fmtDate(NOW);
-  const snap = await userRef(`log/${NOW.getFullYear()}/${k}/${id}`).get();
-  const cur = snap.val() || false;
-  await userRef(`log/${NOW.getFullYear()}/${k}/${id}`).set(!cur);
-  // renderToday is called by listener
-  const h = habits.find(x=>x.id===id);
-  if(!cur && h) showToast(`${h.emoji} ${h.name} — done!`);
-}
+    async function signOut() {
+      if (unsubHabits) unsubHabits();
+      if (unsubLog) unsubLog();
+      await auth.signOut();
+      hide('appEl'); hide('badge'); hide('navEl');
+      show('authScreen');
+      document.getElementById('loginBtn').disabled = false;
+    }
 
-// ══════════════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════════════
-hide('authScreen'); show('loadScreen'); setLoad('Checking session…');
+    // ══════════════════════════════════════════════
+    //  FIREBASE REALTIME DB — LIVE SYNC
+    // ══════════════════════════════════════════════
+    function userRef(path) { return db.ref(`users/${uid}/${path}`); }
 
-auth.onAuthStateChanged(async user => {
-  if(user){
-    uid = user.id || user.uid;
-    hide('authScreen'); hide('loadScreen');
-    show('appEl'); show('badge'); show('navEl');
-    setBadge('ok','✓ live');
-    document.getElementById('userEmailDisplay').textContent = user.email;
-    listenHabits();
-    listenLog();
-  } else {
-    hide('loadScreen');
-    show('authScreen');
-    document.getElementById('loginBtn').disabled = false;
-  }
-});
-
-// ══════════════════════════════════════════════
-//  HELPERS
-// ══════════════════════════════════════════════
-function show(id){const e=document.getElementById(id);if(e)e.style.display='block';}
-function hide(id){const e=document.getElementById(id);if(e)e.style.display='none';}
-function setLoad(t){document.getElementById('loadMsg').textContent=t;}
-function setBadge(c,t){const e=document.getElementById('badge');e.className='badge '+c;e.textContent=t;}
-function fmtDate(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
-function todayKey(){return fmtDate(NOW);}
-function dim(y,m){return new Date(y,m+1,0).getDate();}
-function pc(p){return p>=80?'var(--grn)':p>=50?'var(--gold)':'var(--red)';}
-function sw(name,btn){
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.querySelectorAll('.nt').forEach(t=>t.classList.remove('active'));
-  document.getElementById('view-'+name).classList.add('active');btn.classList.add('active');
-  ({monthly:renderMonthly,yearly:renderYearly,calendar:renderCalendar,manage:renderManage})[name]?.();
-}
-function showNavEl(){document.getElementById('navEl').style.display='flex';}
-
-// ══════════════════════════════════════════════
-//  TODAY  (reads from Firebase snapshot)
-// ══════════════════════════════════════════════
-function renderToday(){
-  const h=NOW.getHours();
-  document.getElementById('greeting').textContent=`${h<12?'Good morning':h<17?'Good afternoon':'Good evening'}, Sahil 👋`;
-  // get today's log from Firebase live cache
-  db.ref(`users/${uid}/log/${NOW.getFullYear()}/${todayKey()}`).get().then(snap=>{
-    const dl = snap.val()||{};
-    const done = habits.filter(h=>dl[h.id]).length;
-    const pct  = habits.length?Math.round(done/habits.length*100):0;
-    document.getElementById('ringPct').textContent=pct+'%';
-    document.getElementById('ringArc').setAttribute('stroke-dashoffset',201-201*pct/100);
-    document.getElementById('todaySub').textContent=pct===100?`🎉 Perfect! All ${habits.length} done!`:`${done} of ${habits.length} habits done today`;
-    const grid=document.getElementById('habitsGrid');grid.innerHTML='';
-    habits.forEach(h=>{
-      const isDone=!!dl[h.id];
-      const c=document.createElement('div');c.className='hc'+(isDone?' done':'');
-      c.innerHTML=`<div class="hchk">${isDone?'✓':''}</div><div class="hi"><div class="hn">${h.name}</div><div class="hs" id="streak-${h.id}">Loading…</div></div><div class="he">${h.emoji}</div>`;
-      c.onclick=()=>toggleHabit(h.id);
-      grid.appendChild(c);
-      getStreak(h.id).then(s=>{
-        const el=document.getElementById('streak-'+h.id);
-        if(el)el.textContent=s>0?`🔥 ${s} day streak`:'Start your streak!';
+    function listenHabits() {
+      unsubHabits = userRef('habits').on('value', snap => {
+        const val = snap.val();
+        if (val) {
+          habits = Object.values(val).sort((a, b) => (a.order || 0) - (b.order || 0));
+        } else {
+          // first time — write defaults
+          const obj = {};
+          DEF_HABITS.forEach((h, i) => { obj[h.id] = { ...h, order: i }; });
+          userRef('habits').set(obj);
+          habits = DEF_HABITS;
+        }
+        renderToday();
+        if (document.getElementById('view-manage').classList.contains('active')) renderManage();
       });
-    });
-  });
-}
-
-async function getStreak(hid){
-  let streak=0;
-  const d=new Date(NOW);d.setDate(d.getDate()-1);
-  for(let i=0;i<60;i++){
-    const year=d.getFullYear(),k=fmtDate(d);
-    const snap=await db.ref(`users/${uid}/log/${year}/${k}/${hid}`).get();
-    if(snap.val()){streak++;d.setDate(d.getDate()-1);}else break;
-  }
-  return streak;
-}
-
-// ══════════════════════════════════════════════
-//  MONTHLY
-// ══════════════════════════════════════════════
-let mvY=NOW.getFullYear(),mvM=NOW.getMonth();
-function mnav(d){mvM+=d;if(mvM>11){mvM=0;mvY++;}if(mvM<0){mvM=11;mvY--;}renderMonthly();}
-async function renderMonthly(){
-  document.getElementById('mLbl').textContent=`${MONTHS[mvM]} ${mvY}`;
-  const yearLog = await getLog(mvY);
-  const days=dim(mvY,mvM);
-  let td=0,tp=0,bd=0,bdn=0,cur=0,ms=0;
-  const hc={},dd={};habits.forEach(h=>hc[h.id]=0);
-  for(let d=1;d<=days;d++){
-    const k=`${mvY}-${String(mvM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const dl=yearLog[k]||{},done=habits.filter(h=>dl[h.id]).length;
-    dd[d]={done,total:habits.length,pct:habits.length?done/habits.length:0,dl};
-    td+=done;tp+=habits.length;
-    if(done>bd){bd=done;bdn=d;}
-    done>0?(cur++,cur>ms&&(ms=cur)):(cur=0);
-    habits.forEach(h=>{if(dl[h.id])hc[h.id]++;});
-  }
-  const pct=tp?Math.round(td/tp*100):0;
-  document.getElementById('mStats').innerHTML=`
-    <div class="sc"><div class="scl">Completion</div><div class="scv" style="color:${pc(pct)}">${pct}%</div><div class="scs">${td}/${tp}</div></div>
-    <div class="sc"><div class="scl">Best Day</div><div class="scv" style="color:var(--grn)">${bd}</div><div class="scs">${bd>0?MS[mvM]+' '+bdn:'No data'}</div></div>
-    <div class="sc"><div class="scl">Best Streak</div><div class="scv" style="color:var(--gold)">${ms}</div><div class="scs">days in a row</div></div>
-    <div class="sc"><div class="scl">Active Days</div><div class="scv" style="color:var(--acc)">${Object.values(dd).filter(d=>d.done>0).length}</div><div class="scs">of ${days}</div></div>`;
-  const list=document.getElementById('mHabits');list.innerHTML='';
-  [...habits].sort((a,b)=>(hc[b.id]||0)-(hc[a.id]||0)).forEach(h=>{
-    const c=hc[h.id]||0,p=Math.round(c/days*100);
-    const div=document.createElement('div');div.className='pr';
-    div.innerHTML=`<div class="prt"><span class="prn">${h.emoji} ${h.name}</span><div class="prr"><span class="prc">${c}/${days}</span><span class="prp" style="color:${pc(p)}">${p}%</span></div></div><div class="bt"><div class="bf" style="width:${p}%"></div></div>`;
-    list.appendChild(div);
-  });
-  const grid=document.getElementById('mCal');grid.innerHTML='';
-  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(l=>{const e=document.createElement('div');e.className='cdl';e.textContent=l;grid.appendChild(e);});
-  const fd=new Date(mvY,mvM,1).getDay();
-  for(let i=0;i<fd;i++){const e=document.createElement('div');e.className='cd e';grid.appendChild(e);}
-  for(let d=1;d<=days;d++){
-    const k=`${mvY}-${String(mvM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,ddd=dd[d];
-    const el=document.createElement('div');el.className='cd hd'+(k===todayKey()?' today':'');
-    el.innerHTML=`<span>${d}</span>${ddd.done>0?`<div class="dot ${ddd.pct>=.7?'dg':ddd.pct>=.4?'dm':'dl'}"></div>`:''}`;
-    el.onclick=()=>{
-      document.querySelectorAll('#mCal .cd').forEach(e=>e.classList.remove('sel'));el.classList.add('sel');
-      document.getElementById('mDay').innerHTML=`<div class="dp"><h3>${MONTHS[mvM]} ${d} — ${ddd.done}/${ddd.total} done (${Math.round(ddd.pct*100)}%)</h3><div class="g2">${habits.map(h=>`<div class="hc${ddd.dl[h.id]?' done':''}"><div class="hchk">${ddd.dl[h.id]?'✓':''}</div><div class="hi"><div class="hn">${h.name}</div></div><div class="he">${h.emoji}</div></div>`).join('')}</div></div>`;
-    };
-    grid.appendChild(el);
-  }
-  document.getElementById('mDay').innerHTML='';
-}
-
-// ══════════════════════════════════════════════
-//  YEARLY
-// ══════════════════════════════════════════════
-let vyY=NOW.getFullYear();
-function ynav(d){vyY+=d;renderYearly();}
-async function renderYearly(){
-  document.getElementById('yLbl').textContent='Year '+vyY;
-  const yearLog=await getLog(vyY);
-  let td=0,tp=0,monthData=[];
-  const hc={};habits.forEach(h=>hc[h.id]=0);
-  for(let m=0;m<12;m++){
-    const days=dim(vyY,m);let mtd=0,mtp=0;
-    for(let d=1;d<=days;d++){
-      const k=`${vyY}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const dl=yearLog[k]||{},done=habits.filter(h=>dl[h.id]).length;
-      mtd+=done;mtp+=habits.length;
-      habits.forEach(h=>{if(dl[h.id])hc[h.id]++;});
     }
-    monthData.push({m,days,td:mtd,tp:mtp,pct:mtp?Math.round(mtd/mtp*100):0});
-    td+=mtd;tp+=mtp;
-  }
-  const pct=tp?Math.round(td/tp*100):0;
-  const act=Object.keys(yearLog).filter(k=>Object.values(yearLog[k]).some(Boolean)).length;
-  document.getElementById('yStats').innerHTML=`
+
+    function listenLog() {
+      // listen to current year's log for live updates
+      unsubLog = userRef(`log/${NOW.getFullYear()}`).on('value', () => {
+        renderToday();
+      });
+    }
+
+    async function getLog(year) {
+      const snap = await userRef(`log/${year}`).get();
+      return snap.val() || {};
+    }
+
+    async function toggleHabit(id) {
+      const k = fmtDate(NOW);
+      const snap = await userRef(`log/${NOW.getFullYear()}/${k}/${id}`).get();
+      const cur = snap.val() || false;
+      await userRef(`log/${NOW.getFullYear()}/${k}/${id}`).set(!cur);
+      // renderToday is called by listener
+      const h = habits.find(x => x.id === id);
+      if (!cur && h) showToast(`${h.emoji} ${h.name} — done!`);
+    }
+
+    // ══════════════════════════════════════════════
+    //  INIT
+    // ══════════════════════════════════════════════
+    hide('authScreen'); show('loadScreen'); setLoad('Checking session…');
+
+    auth.onAuthStateChanged(async user => {
+      if (user) {
+        uid = user.id || user.uid;
+        hide('authScreen'); hide('loadScreen');
+        show('appEl'); show('badge'); show('navEl');
+        setBadge('ok', '✓ live');
+        document.getElementById('userEmailDisplay').textContent = user.email;
+        listenHabits();
+        listenLog();
+      } else {
+        hide('loadScreen');
+        show('authScreen');
+        document.getElementById('loginBtn').disabled = false;
+      }
+    });
+
+    // ══════════════════════════════════════════════
+    //  HELPERS
+    // ══════════════════════════════════════════════
+    function show(id) { const e = document.getElementById(id); if (e) e.style.display = 'block'; }
+    function hide(id) { const e = document.getElementById(id); if (e) e.style.display = 'none'; }
+    function setLoad(t) { document.getElementById('loadMsg').textContent = t; }
+    function setBadge(c, t) { const e = document.getElementById('badge'); e.className = 'badge ' + c; e.textContent = t; }
+    function fmtDate(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+    function todayKey() { return fmtDate(NOW); }
+    function dim(y, m) { return new Date(y, m + 1, 0).getDate(); }
+    function pc(p) { return p >= 80 ? 'var(--grn)' : p >= 50 ? 'var(--gold)' : 'var(--red)'; }
+    function sw(name, btn) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.nt').forEach(t => t.classList.remove('active'));
+      document.getElementById('view-' + name).classList.add('active'); btn.classList.add('active');
+      ({ monthly: renderMonthly, yearly: renderYearly, calendar: renderCalendar, manage: renderManage })[name]?.();
+    }
+    function showNavEl() { document.getElementById('navEl').style.display = 'flex'; }
+
+    // ══════════════════════════════════════════════
+    //  TODAY  (reads from Firebase snapshot)
+    // ══════════════════════════════════════════════
+    function renderToday() {
+      const h = NOW.getHours();
+      document.getElementById('greeting').textContent = `${h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'}, Sahil 👋`;
+      // get today's log from Firebase live cache
+      db.ref(`users/${uid}/log/${NOW.getFullYear()}/${todayKey()}`).get().then(snap => {
+        const dl = snap.val() || {};
+        const done = habits.filter(h => dl[h.id]).length;
+        const pct = habits.length ? Math.round(done / habits.length * 100) : 0;
+        document.getElementById('ringPct').textContent = pct + '%';
+        document.getElementById('ringArc').setAttribute('stroke-dashoffset', 201 - 201 * pct / 100);
+        document.getElementById('todaySub').textContent = pct === 100 ? `🎉 Perfect! All ${habits.length} done!` : `${done} of ${habits.length} habits done today`;
+        const grid = document.getElementById('habitsGrid'); grid.innerHTML = '';
+        habits.forEach(h => {
+          const isDone = !!dl[h.id];
+          const c = document.createElement('div'); c.className = 'hc' + (isDone ? ' done' : '');
+          c.innerHTML = `<div class="hchk">${isDone ? '✓' : ''}</div><div class="hi"><div class="hn">${h.name}</div><div class="hs" id="streak-${h.id}">Loading…</div></div><div class="he">${h.emoji}</div>`;
+          c.onclick = () => toggleHabit(h.id);
+          grid.appendChild(c);
+          getStreak(h.id).then(s => {
+            const el = document.getElementById('streak-' + h.id);
+            if (el) el.textContent = s > 0 ? `🔥 ${s} day streak` : 'Start your streak!';
+          });
+        });
+      });
+    }
+
+    async function getStreak(hid) {
+      let streak = 0;
+      const d = new Date(NOW); d.setDate(d.getDate() - 1);
+      for (let i = 0; i < 60; i++) {
+        const year = d.getFullYear(), k = fmtDate(d);
+        const snap = await db.ref(`users/${uid}/log/${year}/${k}/${hid}`).get();
+        if (snap.val()) { streak++; d.setDate(d.getDate() - 1); } else break;
+      }
+      return streak;
+    }
+
+    // ══════════════════════════════════════════════
+    //  MONTHLY
+    // ══════════════════════════════════════════════
+    let mvY = NOW.getFullYear(), mvM = NOW.getMonth();
+    function mnav(d) { mvM += d; if (mvM > 11) { mvM = 0; mvY++; } if (mvM < 0) { mvM = 11; mvY--; } renderMonthly(); }
+    async function renderMonthly() {
+      document.getElementById('mLbl').textContent = `${MONTHS[mvM]} ${mvY}`;
+      const yearLog = await getLog(mvY);
+      const days = dim(mvY, mvM);
+      let td = 0, tp = 0, bd = 0, bdn = 0, cur = 0, ms = 0;
+      const hc = {}, dd = {}; habits.forEach(h => hc[h.id] = 0);
+      for (let d = 1; d <= days; d++) {
+        const k = `${mvY}-${String(mvM + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const dl = yearLog[k] || {}, done = habits.filter(h => dl[h.id]).length;
+        dd[d] = { done, total: habits.length, pct: habits.length ? done / habits.length : 0, dl };
+        td += done; tp += habits.length;
+        if (done > bd) { bd = done; bdn = d; }
+        done > 0 ? (cur++, cur > ms && (ms = cur)) : (cur = 0);
+        habits.forEach(h => { if (dl[h.id]) hc[h.id]++; });
+      }
+      const pct = tp ? Math.round(td / tp * 100) : 0;
+      document.getElementById('mStats').innerHTML = `
+    <div class="sc"><div class="scl">Completion</div><div class="scv" style="color:${pc(pct)}">${pct}%</div><div class="scs">${td}/${tp}</div></div>
+    <div class="sc"><div class="scl">Best Day</div><div class="scv" style="color:var(--grn)">${bd}</div><div class="scs">${bd > 0 ? MS[mvM] + ' ' + bdn : 'No data'}</div></div>
+    <div class="sc"><div class="scl">Best Streak</div><div class="scv" style="color:var(--gold)">${ms}</div><div class="scs">days in a row</div></div>
+    <div class="sc"><div class="scl">Active Days</div><div class="scv" style="color:var(--acc)">${Object.values(dd).filter(d => d.done > 0).length}</div><div class="scs">of ${days}</div></div>`;
+      const list = document.getElementById('mHabits'); list.innerHTML = '';
+      [...habits].sort((a, b) => (hc[b.id] || 0) - (hc[a.id] || 0)).forEach(h => {
+        const c = hc[h.id] || 0, p = Math.round(c / days * 100);
+        const div = document.createElement('div'); div.className = 'pr';
+        div.innerHTML = `<div class="prt"><span class="prn">${h.emoji} ${h.name}</span><div class="prr"><span class="prc">${c}/${days}</span><span class="prp" style="color:${pc(p)}">${p}%</span></div></div><div class="bt"><div class="bf" style="width:${p}%"></div></div>`;
+        list.appendChild(div);
+      });
+      const grid = document.getElementById('mCal'); grid.innerHTML = '';
+      ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(l => { const e = document.createElement('div'); e.className = 'cdl'; e.textContent = l; grid.appendChild(e); });
+      const fd = new Date(mvY, mvM, 1).getDay();
+      for (let i = 0; i < fd; i++) { const e = document.createElement('div'); e.className = 'cd e'; grid.appendChild(e); }
+      for (let d = 1; d <= days; d++) {
+        const k = `${mvY}-${String(mvM + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`, ddd = dd[d];
+        const el = document.createElement('div'); el.className = 'cd hd' + (k === todayKey() ? ' today' : '');
+        el.innerHTML = `<span>${d}</span>${ddd.done > 0 ? `<div class="dot ${ddd.pct >= .7 ? 'dg' : ddd.pct >= .4 ? 'dm' : 'dl'}"></div>` : ''}`;
+        el.onclick = () => {
+          document.querySelectorAll('#mCal .cd').forEach(e => e.classList.remove('sel')); el.classList.add('sel');
+          document.getElementById('mDay').innerHTML = `<div class="dp"><h3>${MONTHS[mvM]} ${d} — ${ddd.done}/${ddd.total} done (${Math.round(ddd.pct * 100)}%)</h3><div class="g2">${habits.map(h => `<div class="hc${ddd.dl[h.id] ? ' done' : ''}"><div class="hchk">${ddd.dl[h.id] ? '✓' : ''}</div><div class="hi"><div class="hn">${h.name}</div></div><div class="he">${h.emoji}</div></div>`).join('')}</div></div>`;
+        };
+        grid.appendChild(el);
+      }
+      document.getElementById('mDay').innerHTML = '';
+    }
+
+    // ══════════════════════════════════════════════
+    //  YEARLY
+    // ══════════════════════════════════════════════
+    let vyY = NOW.getFullYear();
+    function ynav(d) { vyY += d; renderYearly(); }
+    async function renderYearly() {
+      document.getElementById('yLbl').textContent = 'Year ' + vyY;
+      const yearLog = await getLog(vyY);
+      let td = 0, tp = 0, monthData = [];
+      const hc = {}; habits.forEach(h => hc[h.id] = 0);
+      for (let m = 0; m < 12; m++) {
+        const days = dim(vyY, m); let mtd = 0, mtp = 0;
+        for (let d = 1; d <= days; d++) {
+          const k = `${vyY}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+          const dl = yearLog[k] || {}, done = habits.filter(h => dl[h.id]).length;
+          mtd += done; mtp += habits.length;
+          habits.forEach(h => { if (dl[h.id]) hc[h.id]++; });
+        }
+        monthData.push({ m, days, td: mtd, tp: mtp, pct: mtp ? Math.round(mtd / mtp * 100) : 0 });
+        td += mtd; tp += mtp;
+      }
+      const pct = tp ? Math.round(td / tp * 100) : 0;
+      const act = Object.keys(yearLog).filter(k => Object.values(yearLog[k]).some(Boolean)).length;
+      document.getElementById('yStats').innerHTML = `
     <div class="sc"><div class="scl">Year %</div><div class="scv" style="color:${pc(pct)}">${pct}%</div><div class="scs">${td} checks</div></div>
     <div class="sc"><div class="scl">Active Days</div><div class="scv" style="color:var(--acc)">${act}</div><div class="scs">with activity</div></div>
     <div class="sc"><div class="scl">Habits</div><div class="scv" style="color:var(--gold)">${habits.length}</div><div class="scs">tracked</div></div>
     <div class="sc"><div class="scv" style="color:var(--mut)">${tp}</div><div class="scs">habit-days</div></div>`;
-  const hm=document.getElementById('hmEl');hm.innerHTML='';
-  const pad=new Date(vyY,0,1).getDay();
-  for(let c=0;c<53;c++){
-    const col=document.createElement('div');col.className='hmc';
-    const lbl=document.createElement('div');lbl.className='hml';let ls=false;
-    for(let r=0;r<7;r++){
-      const idx=c*7+r-pad,dobj=new Date(vyY,0,1+idx);
-      if(!ls&&dobj.getFullYear()===vyY&&dobj.getDate()<=7){lbl.textContent=MS[dobj.getMonth()];ls=true;}
-      const cell=document.createElement('div');
-      if(idx<0||dobj.getFullYear()!==vyY){cell.className='hmx hm0';}
-      else{const k=fmtDate(dobj),dl=yearLog[k]||{},done=habits.filter(h=>dl[h.id]).length,tot=habits.length;cell.className=`hmx hm${tot===0?0:Math.min(5,Math.ceil(done/tot*5))}`;cell.title=`${k}: ${done}/${tot}`;}
-      col.appendChild(cell);
+      const hm = document.getElementById('hmEl'); hm.innerHTML = '';
+      const pad = new Date(vyY, 0, 1).getDay();
+      for (let c = 0; c < 53; c++) {
+        const col = document.createElement('div'); col.className = 'hmc';
+        const lbl = document.createElement('div'); lbl.className = 'hml'; let ls = false;
+        for (let r = 0; r < 7; r++) {
+          const idx = c * 7 + r - pad, dobj = new Date(vyY, 0, 1 + idx);
+          if (!ls && dobj.getFullYear() === vyY && dobj.getDate() <= 7) { lbl.textContent = MS[dobj.getMonth()]; ls = true; }
+          const cell = document.createElement('div');
+          if (idx < 0 || dobj.getFullYear() !== vyY) { cell.className = 'hmx hm0'; }
+          else { const k = fmtDate(dobj), dl = yearLog[k] || {}, done = habits.filter(h => dl[h.id]).length, tot = habits.length; cell.className = `hmx hm${tot === 0 ? 0 : Math.min(5, Math.ceil(done / tot * 5))}`; cell.title = `${k}: ${done}/${tot}`; }
+          col.appendChild(cell);
+        }
+        hm.appendChild(lbl); hm.appendChild(col);
+      }
+      const ym = document.getElementById('ymEl'); ym.innerHTML = '';
+      monthData.forEach(({ m, td: mtd, tp: mtp, days, pct: mp }) => {
+        const c = document.createElement('div'); c.className = 'ymc';
+        c.innerHTML = `<div class="ymcn">${MS[m]}</div><div class="ymcp" style="color:${pc(mp)}">${mp}%</div><div class="ymcb"><div class="ymcf" style="width:${mp}%"></div></div><div class="ymcs">${mtd} checks · ${days} days</div>`;
+        c.onclick = () => { mvY = vyY; mvM = m; sw('monthly', document.querySelector('[data-v=monthly]')); };
+        ym.appendChild(c);
+      });
+      const yhl = document.getElementById('yHabits'); yhl.innerHTML = '';
+      const totalDays = monthData.reduce((a, m) => a + m.days, 0);
+      [...habits].sort((a, b) => (hc[b.id] || 0) - (hc[a.id] || 0)).forEach(h => {
+        const cnt = hc[h.id] || 0, p = totalDays ? Math.round(cnt / totalDays * 100) : 0;
+        const div = document.createElement('div'); div.className = 'pr';
+        div.innerHTML = `<div class="prt"><span class="prn">${h.emoji} ${h.name}</span><div class="prr"><span class="prc">${cnt}/${totalDays}</span><span class="prp" style="color:${pc(p)}">${p}%</span></div></div><div class="bt"><div class="bf" style="width:${p}%"></div></div>`;
+        yhl.appendChild(div);
+      });
     }
-    hm.appendChild(lbl);hm.appendChild(col);
-  }
-  const ym=document.getElementById('ymEl');ym.innerHTML='';
-  monthData.forEach(({m,td:mtd,tp:mtp,days,pct:mp})=>{
-    const c=document.createElement('div');c.className='ymc';
-    c.innerHTML=`<div class="ymcn">${MS[m]}</div><div class="ymcp" style="color:${pc(mp)}">${mp}%</div><div class="ymcb"><div class="ymcf" style="width:${mp}%"></div></div><div class="ymcs">${mtd} checks · ${days} days</div>`;
-    c.onclick=()=>{mvY=vyY;mvM=m;sw('monthly',document.querySelector('[data-v=monthly]'));};
-    ym.appendChild(c);
-  });
-  const yhl=document.getElementById('yHabits');yhl.innerHTML='';
-  const totalDays=monthData.reduce((a,m)=>a+m.days,0);
-  [...habits].sort((a,b)=>(hc[b.id]||0)-(hc[a.id]||0)).forEach(h=>{
-    const cnt=hc[h.id]||0,p=totalDays?Math.round(cnt/totalDays*100):0;
-    const div=document.createElement('div');div.className='pr';
-    div.innerHTML=`<div class="prt"><span class="prn">${h.emoji} ${h.name}</span><div class="prr"><span class="prc">${cnt}/${totalDays}</span><span class="prp" style="color:${pc(p)}">${p}%</span></div></div><div class="bt"><div class="bf" style="width:${p}%"></div></div>`;
-    yhl.appendChild(div);
-  });
-}
 
-// ══════════════════════════════════════════════
-//  CALENDAR
-// ══════════════════════════════════════════════
-let calY=NOW.getFullYear(),calM=NOW.getMonth();
-function calnav(d){calM+=d;if(calM>11){calM=0;calY++;}if(calM<0){calM=11;calY--;}renderCalendar();}
-async function renderCalendar(){
-  document.getElementById('calLbl').textContent=`${MONTHS[calM]} ${calY}`;
-  const yearLog=await getLog(calY);
-  const grid=document.getElementById('calGrid');grid.innerHTML='';
-  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(l=>{const e=document.createElement('div');e.className='cdl';e.textContent=l;grid.appendChild(e);});
-  const fd=new Date(calY,calM,1).getDay(),days=dim(calY,calM);
-  for(let i=0;i<fd;i++){const e=document.createElement('div');e.className='cd e';grid.appendChild(e);}
-  for(let d=1;d<=days;d++){
-    const k=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const dl=yearLog[k]||{},done=habits.filter(h=>dl[h.id]).length,pct=habits.length?done/habits.length:0;
-    const el=document.createElement('div');el.className='cd hd'+(k===todayKey()?' today':'');
-    el.innerHTML=`<span>${d}</span>${done>0?`<div class="dot ${pct>=.7?'dg':pct>=.4?'dm':'dl'}"></div>`:''}`;
-    el.onclick=()=>{
-      document.querySelectorAll('#calGrid .cd').forEach(e=>e.classList.remove('sel'));el.classList.add('sel');
-      document.getElementById('calDay').innerHTML=`<div class="dp"><h3>${MONTHS[calM]} ${d} — ${done}/${habits.length} done (${Math.round(pct*100)}%)</h3><div class="g2">${habits.map(h=>`<div class="hc${dl[h.id]?' done':''}"><div class="hchk">${dl[h.id]?'✓':''}</div><div class="hi"><div class="hn">${h.name}</div></div><div class="he">${h.emoji}</div></div>`).join('')}</div></div>`;
-    };
-    grid.appendChild(el);
-  }
-  document.getElementById('calDay').innerHTML='';
-}
+    // ══════════════════════════════════════════════
+    //  CALENDAR
+    // ══════════════════════════════════════════════
+    let calY = NOW.getFullYear(), calM = NOW.getMonth();
+    function calnav(d) { calM += d; if (calM > 11) { calM = 0; calY++; } if (calM < 0) { calM = 11; calY--; } renderCalendar(); }
+    async function renderCalendar() {
+      document.getElementById('calLbl').textContent = `${MONTHS[calM]} ${calY}`;
+      const yearLog = await getLog(calY);
+      const grid = document.getElementById('calGrid'); grid.innerHTML = '';
+      ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(l => { const e = document.createElement('div'); e.className = 'cdl'; e.textContent = l; grid.appendChild(e); });
+      const fd = new Date(calY, calM, 1).getDay(), days = dim(calY, calM);
+      for (let i = 0; i < fd; i++) { const e = document.createElement('div'); e.className = 'cd e'; grid.appendChild(e); }
+      for (let d = 1; d <= days; d++) {
+        const k = `${calY}-${String(calM + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const dl = yearLog[k] || {}, done = habits.filter(h => dl[h.id]).length, pct = habits.length ? done / habits.length : 0;
+        const el = document.createElement('div'); el.className = 'cd hd' + (k === todayKey() ? ' today' : '');
+        el.innerHTML = `<span>${d}</span>${done > 0 ? `<div class="dot ${pct >= .7 ? 'dg' : pct >= .4 ? 'dm' : 'dl'}"></div>` : ''}`;
+        el.onclick = () => {
+          document.querySelectorAll('#calGrid .cd').forEach(e => e.classList.remove('sel')); el.classList.add('sel');
+          document.getElementById('calDay').innerHTML = `<div class="dp"><h3>${MONTHS[calM]} ${d} — ${done}/${habits.length} done (${Math.round(pct * 100)}%)</h3><div class="g2">${habits.map(h => `<div class="hc${dl[h.id] ? ' done' : ''}"><div class="hchk">${dl[h.id] ? '✓' : ''}</div><div class="hi"><div class="hn">${h.name}</div></div><div class="he">${h.emoji}</div></div>`).join('')}</div></div>`;
+        };
+        grid.appendChild(el);
+      }
+      document.getElementById('calDay').innerHTML = '';
+    }
 
-// ══════════════════════════════════════════════
-//  MANAGE
-// ══════════════════════════════════════════════
-function renderManage(){
-  const list=document.getElementById('manageList');list.innerHTML='';
-  habits.forEach(h=>{
-    const row=document.createElement('div');row.className='mr';
-    row.innerHTML=`<div class="mre">${h.emoji}</div><div class="mrn">${h.name}</div><button class="db" onclick="deleteHabit('${h.id}')">Remove</button>`;
-    list.appendChild(row);
-  });
-}
-async function addHabit(){
-  const name=document.getElementById('newName').value.trim();
-  const emoji=document.getElementById('newEmoji').value;
-  if(!name){showToast('Enter a habit name!');return;}
-  const newId='h'+Date.now();
-  await userRef(`habits/${newId}`).set({id:newId,name,emoji,order:habits.length});
-  document.getElementById('newName').value='';
-  showToast(`${emoji} "${name}" added!`);
-}
-async function deleteHabit(id){
-  const h=habits.find(x=>x.id===id);
-  if(!confirm(`Remove "${h.name}"?`))return;
-  await userRef(`habits/${id}`).remove();
-  showToast('Removed.');
-}
-async function exportJSON(){
-  const snap=await userRef('').get();
-  const b=new Blob([JSON.stringify(snap.val(),null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`sahil_habits_${fmtDate(NOW)}.json`;a.click();
-  showToast('✓ Exported!');
-}
-function showNavEl(){document.getElementById('navEl').style.display='flex';}
-function showBadge(){document.getElementById('badge').style.display='block';}
+    // ══════════════════════════════════════════════
+    //  MANAGE
+    // ══════════════════════════════════════════════
+    function renderManage() {
+      const list = document.getElementById('manageList'); list.innerHTML = '';
+      habits.forEach(h => {
+        const row = document.createElement('div'); row.className = 'mr';
+        row.innerHTML = `<div class="mre">${h.emoji}</div><div class="mrn">${h.name}</div><button class="db" onclick="deleteHabit('${h.id}')">Remove</button>`;
+        list.appendChild(row);
+      });
+    }
+    async function addHabit() {
+      const name = document.getElementById('newName').value.trim();
+      const emoji = document.getElementById('newEmoji').value;
+      if (!name) { showToast('Enter a habit name!'); return; }
+      const newId = 'h' + Date.now();
+      await userRef(`habits/${newId}`).set({ id: newId, name, emoji, order: habits.length });
+      document.getElementById('newName').value = '';
+      showToast(`${emoji} "${name}" added!`);
+    }
+    async function deleteHabit(id) {
+      const h = habits.find(x => x.id === id);
+      if (!confirm(`Remove "${h.name}"?`)) return;
+      await userRef(`habits/${id}`).remove();
+      showToast('Removed.');
+    }
+    async function exportJSON() {
+      const snap = await userRef('').get();
+      const b = new Blob([JSON.stringify(snap.val(), null, 2)], { type: 'application/json' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `sahil_habits_${fmtDate(NOW)}.json`; a.click();
+      showToast('✓ Exported!');
+    }
+    function showNavEl() { document.getElementById('navEl').style.display = 'flex'; }
+    function showBadge() { document.getElementById('badge').style.display = 'block'; }
 
-// ══════════════════════════════════════════════
-//  TOAST
-// ══════════════════════════════════════════════
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
-</script>
+    // ══════════════════════════════════════════════
+    //  TOAST
+    // ══════════════════════════════════════════════
+    function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
+  </script>
 </body>
+
 </html>
