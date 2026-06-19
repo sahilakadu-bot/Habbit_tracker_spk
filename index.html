@@ -9,6 +9,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <style>
+  
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 :root{--bg:#0d0f14;--sur:#141720;--s2:#1c2030;--bor:#252a3a;--acc:#6c63ff;--red:#ff6584;--gold:#f7c948;--grn:#43e97b;--txt:#e8eaf6;--mut:#6b7280}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -246,6 +247,8 @@ main{max-width:1080px;margin:0 auto;padding:24px 16px}
 <div class="toast" id="toast"></div>
 
 <script>
+  import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
 // ══════════════════════════════════════════════
 //  FIREBASE CONFIG
 //  → You MUST replace these with your own values
