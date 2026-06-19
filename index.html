@@ -947,7 +947,7 @@
   <main>
 
     <!-- LOGIN / REGISTER -->
-    <div id="authScreen">
+    <div id="authScreen" style="display:none">
       <div class="ctr">
         <div class="box">
           <div style="font-size:44px;margin-bottom:10px">🎯</div>
@@ -955,7 +955,7 @@
           <p>Sign in with your email — your data syncs instantly across every device.</p>
 
           <div class="lbl">Email</div>
-          <input class="inp" type="email" id="emailInp" placeholder="you@gmail.com" value="sahilakadu26@gmail.com" />
+          <input class="inp" type="email" id="emailInp" placeholder="you@gmail.com" value="sahilakadu@gmail.com" />
 
           <div class="lbl">Password</div>
           <input class="inp" type="password" id="passInp" placeholder="Your password"
@@ -1139,8 +1139,6 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    import { initializeApp } from "firebase/app";
-    import { getAnalytics } from "firebase/analytics";
     // ══════════════════════════════════════════════
     //  FIREBASE CONFIG
     //  → You MUST replace these with your own values
@@ -1153,13 +1151,12 @@
       projectId: "habit-tracker-1a175",
       storageBucket: "habit-tracker-1a175.firebasestorage.app",
       messagingSenderId: "573268353810",
-      appId: "1:573268353810:web:0b2171c9aa320c329009cb",
-      measurementId: "G-TKRYPR1GJM"
+      appId: "1:573268353810:web:0b2171c9aa320c329009cb"
     };
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
 
     // ══════════════════════════════════════════════
     //  APP STATE
@@ -1286,7 +1283,7 @@
 
     auth.onAuthStateChanged(async user => {
       if (user) {
-        uid = user.id || user.uid;
+        uid = user.uid;
         hide('authScreen'); hide('loadScreen');
         show('appEl'); show('badge'); show('navEl');
         setBadge('ok', '✓ live');
