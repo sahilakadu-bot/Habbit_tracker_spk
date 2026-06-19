@@ -298,12 +298,7 @@ let unsubHabits = null, unsubLog = null;
 // ══════════════════════════════════════════════
 //  AUTH
 // ══════════════════════════════════════════════
-function toggleMode(){
-  isRegister = !isRegister;
-  document.getElementById('loginBtn').textContent = isRegister ? 'Create Account →' : 'Sign In →';
-  document.getElementById('toggleTxt').textContent = isRegister ? 'Sign in instead' : 'Create one';
-  document.getElementById('authErr').style.display = 'none';
-}
+function toggleMode(){ /* disabled */ }
 
 const ALLOWED_EMAIL = 'sahilakadu@gmail.com';
 
@@ -320,27 +315,7 @@ async function doLogin(){
     return;
   }
 
-  if(!pass){showAuthErr('Please enter your password.');return;}
-  btn.disabled = true;
-  try{
-    if(isRegister){
-      await auth.createUserWithEmailAndPassword(email, pass);
-    } else {
-      await auth.signInWithEmailAndPassword(email, pass);
-    }
-  } catch(e){
-    btn.disabled = false;
-    const msgs = {
-      'auth/user-not-found':'No account yet. Click "Create one" to register.',
-      'auth/wrong-password':'Wrong password. Please try again.',
-      'auth/invalid-email':'Please enter a valid email address.',
-      'auth/email-already-in-use':'Account already exists. Click "Sign in instead".',
-      'auth/weak-password':'Password must be at least 6 characters.',
-      'auth/too-many-requests':'Too many attempts. Please wait a moment.',
-      'auth/invalid-credential':'Wrong password. Please try again.',
-    };
-    showAuthErr(msgs[e.code] || e.message);
-  }
+  // this block intentionally left clean — login handled above
 }
 
 function showAuthErr(msg){
