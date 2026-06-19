@@ -942,6 +942,9 @@
       <button class="nt" data-v="manage" onclick="sw('manage',this)">Manage</button>
     </div>
     <div class="badge ok" id="badge" style="display:none">✓ live</div>
+    <button id="logoutBtn" onclick="signOut()"
+      style="display:none;background:transparent;border:1px solid var(--red);color:var(--red);border-radius:7px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif">Sign
+      Out</button>
   </header>
 
   <main>
@@ -952,10 +955,11 @@
         <div class="box">
           <div style="font-size:44px;margin-bottom:10px">🎯</div>
           <h1>Sahil's Habit Tracker</h1>
-          <p>Sign in with your email — your data syncs instantly across every device.</p>
+          <p>🔒 Private app — owner access only.<br>Enter your password to continue.</p>
 
           <div class="lbl">Email</div>
-          <input class="inp" type="email" id="emailInp" placeholder="you@gmail.com" value="sahilakadu@gmail.com" />
+          <input class="inp" type="email" id="emailInp" placeholder="you@gmail.com" value="sahilakadu@gmail.com"
+            readonly style="opacity:.6;cursor:not-allowed" />
 
           <div class="lbl">Password</div>
           <input class="inp" type="password" id="passInp" placeholder="Your password"
@@ -964,8 +968,8 @@
           <button class="mbtn" id="loginBtn" onclick="doLogin()">Sign In →</button>
           <div class="errbox" id="authErr"></div>
 
-          <div class="toggle" onclick="toggleMode()">
-            No account? <span id="toggleTxt">Create one</span>
+          <div class="toggle" id="toggleRow" onclick="toggleMode()">
+            First time? <span id="toggleTxt">Create account</span>
           </div>
           <div class="note">🔒 Your data is private — only you can see it.</div>
         </div>
@@ -1087,8 +1091,17 @@
         </div>
         <div class="ib">
           ✅ Signed in as <strong id="userEmailDisplay" style="color:var(--acc)">—</strong><br>
-          <span style="color:var(--mut);font-size:12px">Data syncs live across all devices. Just sign in with the same
-            email anywhere.</span>
+          <span style="color:var(--mut);font-size:12px">Last login: <span id="lastLogin">—</span></span><br>
+          <span style="color:var(--mut);font-size:12px">Device: <span id="deviceInfo">—</span></span>
+        </div>
+        <div
+          style="background:var(--s2);border:1px solid var(--bor);border-radius:11px;padding:16px;margin-bottom:20px;font-size:13px;line-height:1.8">
+          <strong>📱 Multi-device Info</strong><br>
+          <span style="color:var(--mut)">Firebase allows <strong style="color:var(--grn)">unlimited devices</strong>
+            logged in at the same time — free forever.<br>
+            Just open <strong style="color:var(--acc)">sahilakadu-bot.github.io/Habbit_tracker_spk/</strong> on any
+            device, sign in with your email and password, and your data is instantly there. No limit on how many
+            devices.</span>
         </div>
         <div style="margin-bottom:24px">
           <button class="actb" onclick="signOut()">Sign Out</button>
@@ -1189,13 +1202,22 @@
       document.getElementById('authErr').style.display = 'none';
     }
 
+    const ALLOWED_EMAIL = 'sahilakadu@gmail.com';
+
     async function doLogin() {
-      const email = document.getElementById('emailInp').value.trim();
+      const email = document.getElementById('emailInp').value.trim().toLowerCase();
       const pass = document.getElementById('passInp').value;
       const errEl = document.getElementById('authErr');
       const btn = document.getElementById('loginBtn');
       errEl.style.display = 'none';
-      if (!email || !pass) { showAuthErr('Please enter email and password.'); return; }
+
+      // 🔒 Block anyone who is not Sahil
+      if (email !== ALLOWED_EMAIL) {
+        showAuthErr('🔒 This app is private. Only the owner can access it.');
+        return;
+      }
+
+      if (!pass) { showAuthErr('Please enter your password.'); return; }
       btn.disabled = true;
       try {
         if (isRegister) {
@@ -1206,13 +1228,13 @@
       } catch (e) {
         btn.disabled = false;
         const msgs = {
-          'auth/user-not-found': 'No account found. Click "Create one" to register.',
+          'auth/user-not-found': 'No account yet. Click "Create one" to register.',
           'auth/wrong-password': 'Wrong password. Please try again.',
           'auth/invalid-email': 'Please enter a valid email address.',
           'auth/email-already-in-use': 'Account already exists. Click "Sign in instead".',
           'auth/weak-password': 'Password must be at least 6 characters.',
           'auth/too-many-requests': 'Too many attempts. Please wait a moment.',
-          'auth/invalid-credential': 'Wrong email or password. Please try again.',
+          'auth/invalid-credential': 'Wrong password. Please try again.',
         };
         showAuthErr(msgs[e.code] || e.message);
       }
@@ -1228,6 +1250,7 @@
       if (unsubLog) unsubLog();
       await auth.signOut();
       hide('appEl'); hide('badge'); hide('navEl');
+      document.getElementById('logoutBtn').style.display = 'none';
       show('authScreen');
       document.getElementById('loginBtn').disabled = false;
     }
@@ -1288,6 +1311,22 @@
         show('appEl'); show('badge'); show('navEl');
         setBadge('ok', '✓ live');
         document.getElementById('userEmailDisplay').textContent = user.email;
+        // last login time
+        const lastSignIn = user.metadata?.lastSignInTime;
+        if (lastSignIn) {
+          const d = new Date(lastSignIn);
+          document.getElementById('lastLogin').textContent = d.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+        }
+        // device info
+        const ua = navigator.userAgent;
+        let device = 'Unknown device';
+        if (/iPhone/.test(ua)) device = '📱 iPhone';
+        else if (/Android/.test(ua) && /Mobile/.test(ua)) device = '📱 Android Phone';
+        else if (/iPad|Android/.test(ua)) device = '📱 Tablet';
+        else if (/Windows/.test(ua)) device = '💻 Windows PC';
+        else if (/Mac/.test(ua)) device = '💻 Mac';
+        else if (/Linux/.test(ua)) device = '💻 Linux';
+        document.getElementById('deviceInfo').textContent = device;
         listenHabits();
         listenLog();
       } else {
