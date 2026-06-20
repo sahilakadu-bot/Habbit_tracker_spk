@@ -718,7 +718,7 @@ header{
 </header>
 
 <!-- MOBILE BOTTOM NAV -->
-<nav class="bottom-nav" id="bottomNav">
+<nav class="bottom-nav" id="bottomNav" style="display:none">
   <button class="bnt active" data-v="today" onclick="sw('today',this,true)">
     <span class="bnt-icon">🏠</span>Today
   </button>
@@ -742,7 +742,7 @@ header{
 <main>
 
 <!-- LOGIN / REGISTER -->
-<div id="authScreen" style="display:none">
+<div id="authScreen" style="display:none" >
 <div class="ctr"><div class="box">
   <div style="font-size:44px;margin-bottom:10px">🎯</div>
   <h1>Sahil's Habit Tracker</h1>
@@ -1022,38 +1022,53 @@ async function toggleHabit(id){
 // ══════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════
-hide('authScreen'); show('loadScreen'); setLoad('Checking session…');
+// ── show loading first ──
+function showScreen(name){
+  ['authScreen','loadScreen','appEl'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display='none';
+  });
+  const target=document.getElementById(name);
+  if(target) target.style.display='block';
+}
+
+showScreen('loadScreen');
+setLoad('Checking session…');
 
 auth.onAuthStateChanged(async user => {
   if(user){
     uid = user.uid;
-    hide('authScreen'); hide('loadScreen');
-    show('appEl'); show('badge'); show('navEl');
+    showScreen('appEl');
+    document.getElementById('badge').style.display  = 'block';
+    document.getElementById('navEl').style.display  = 'flex';
+    document.getElementById('logoutBtn').style.display = 'block';
+    document.getElementById('bottomNav').style.display = 'flex';
     setBadge('ok','✓ live');
-    document.getElementById('userEmailDisplay').textContent = user.email;
-    // last login time
+    // populate manage info
+    const emailEl = document.getElementById('userEmailDisplay');
+    if(emailEl) emailEl.textContent = user.email;
     const lastSignIn = user.metadata?.lastSignInTime;
     if(lastSignIn){
       const d = new Date(lastSignIn);
-      document.getElementById('lastLogin').textContent = d.toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'});
+      const el = document.getElementById('lastLogin');
+      if(el) el.textContent = d.toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'});
     }
-    // device info
     const ua = navigator.userAgent;
-    let device = 'Unknown device';
-    if(/iPhone/.test(ua)) device = '📱 iPhone';
-    else if(/Android/.test(ua)&&/Mobile/.test(ua)) device = '📱 Android Phone';
-    else if(/iPad|Android/.test(ua)) device = '📱 Tablet';
-    else if(/Windows/.test(ua)) device = '💻 Windows PC';
-    else if(/Mac/.test(ua)) device = '💻 Mac';
-    else if(/Linux/.test(ua)) device = '💻 Linux';
-    document.getElementById('deviceInfo').textContent = device;
+    let device = '💻 Desktop';
+    if(/iPhone/.test(ua))                           device = '📱 iPhone';
+    else if(/Android/.test(ua)&&/Mobile/.test(ua)) device = '📱 Android';
+    else if(/iPad|Android/.test(ua))               device = '📱 Tablet';
+    else if(/Windows/.test(ua))                    device = '💻 Windows';
+    else if(/Mac/.test(ua))                        device = '💻 Mac';
+    const dEl = document.getElementById('deviceInfo');
+    if(dEl) dEl.textContent = device;
     listenHabits();
     listenLog();
     listenTodos();
   } else {
-    hide('loadScreen');
-    show('authScreen');
-    document.getElementById('loginBtn').disabled = false;
+    showScreen('authScreen');
+    const btn = document.getElementById('loginBtn');
+    if(btn){ btn.disabled=false; btn.textContent='Sign In →'; }
   }
 });
 
